@@ -1,0 +1,28 @@
+{
+	"name": "Prototy Todo App",
+	"short_name": "Todo",
+	"description": "A simple todo app built with Prototy framework.",
+	"start_url": "/",
+	"version": "1.0.0",
+	"lang": "en-US",
+	"theme_color": "#21ac50",
+	"background_color": "#ffffff",
+	"display": "standalone",
+	"display_override": ["window-controls-overlay"],
+	"orientation": "portrait",
+	"icons": [
+		{	
+			"purpose": "any",
+			"src": "/icon-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{	
+			"purpose": "maskable",
+			"src": "/icon-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	]
+
+}
