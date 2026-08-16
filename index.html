@@ -1,16 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>PWA</title>
-	<link rel="manifest" href="/manifest.json">
-	<link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png">
-	<link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png">
-
+	<title>Todo App</title>
+	<link rel="stylesheet" href="style.css">
+	<script src="script.js" defer></script>
 </head>
 <body>
-	<h1>Hello, World!</h1>
-	<script type="module" src="/main.js"></script>
+
+<div class="app-container">
+
+	<!-- Шапка: Квадратик с крестиком, инпут и лейбел -->
+	<header class="app-header">
+		<div class="search-row">
+			<div class="color-square">✕</div>
+			<input class="search-input">
+		</div>
+
+		<div class="labels-row">
+			<div class="label">Code</div>
+			<div class="label">Anime</div>
+			<div class="label">Document</div>
+			<div class="label">Anime</div>
+			<div class="label">Document</div>
+			<div class="label">Code</div>
+		</div>
+	</header>
+
+	<!-- Список задач -->
+	<main class="task-list">
+		<div>
+
+			<div class="task-card">
+				<div class="task-title">Сверстать всех на верх</div>
+				<div class="task-description">
+					<span class="category-tag">Code</span>
+					<span class="task-date">Date Time</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="task-card">
+			<div class="task-title">Запланировать новое аниме на киновечер</div>
+			<div class="task-description">
+				<span class="category-tag">Anime</span>
+				<span class="task-date">Date Time</span>
+			</div>
+		</div>
+
+	</main>
+
+	<!-- Нижнее меню -->
+	<nav class="bottom-nav">
+		<button class="nav-settings">Settings</button>
+		<button class="nav-item-add">+</button>
+		<button class="nav-calendar">Calendar</button>
+	</nav>
+
+</div>
+
 </body>
 </html>
