@@ -31,6 +31,7 @@
   --color-square-size: 30px;
   --search-input-height: 30px;
   --bottom-nav-height: 45px;
+  --actions-width: 120px;
 }
 
 /* ==========================================
@@ -102,12 +103,16 @@ body {
 .labels-row {
   display: flex;
   gap: var(--spacing-s);
+  width: 100%;
 
   overflow-x: auto;
   white-space: nowrap;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 
-  cursor: grab;
-  user-select: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .labels-row::-webkit-scrollbar {
@@ -120,6 +125,7 @@ body {
 
 .label {
   flex-shrink: 0;
+  scroll-snap-align: start;
   background-color: var(--color-bg-element);
   padding-inline: var(--spacing-m);
   padding-block: var(--spacing-xs);
@@ -132,10 +138,67 @@ body {
   flex: 1;
 }
 
+.task-swipe-wrapper {
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+
+  border-bottom: 1px solid var(--color-border);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.task-swipe-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.task-card,
+.task-actions-left,
+.task-actions-right {
+  scroll-snap-stop: always;
+}
+
 .task-card {
+  flex: 0 0 100%;
+  background-color: var(--color-bg-app);
   padding-inline: var(--spacing-m);
   padding-block: var(--spacing-m);
-  border-bottom: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+
+  scroll-snap-align: center;
+
+  outline: none;
+}
+
+.task-actions {
+  flex: 0 0 var(--actions-width);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background-color: var(--color-bg-accent);
+}
+
+.task-actions-left {
+  scroll-snap-align: start;
+}
+
+.task-actions-right {
+  scroll-snap-align: end;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  padding-inline: var(--spacing-xs);
+  padding-block: var(--spacing-m);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .task-title {

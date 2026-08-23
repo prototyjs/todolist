@@ -4,7 +4,6 @@
 	<meta charset="UTF-8">
 	<title>Todo App</title>
 	<link rel="stylesheet" href="style.css">
-	<script src="script.js" defer></script>
 </head>
 <body>
 
@@ -29,23 +28,56 @@
 
 	<!-- Список задач -->
 	<main class="task-list">
-		<div>
+		<!-- Оборачиваем задачку в кнопки -->
+		<div class="task-swipe-wrapper">
 
-			<div class="task-card">
+			<!-- Левые кнопки -->
+			<div class="task-actions task-actions-left">
+				<button class="action-btn">Blank</button>
+				<button class="action-btn">Progress</button>
+				<button class="action-btn">Done</button>
+			</div>
+
+			<div class="task-card" tabindex="0" autofocus>
 				<div class="task-title">Сверстать всех на верх</div>
 				<div class="task-description">
 					<span class="category-tag">Code</span>
 					<span class="task-date">Date Time</span>
 				</div>
 			</div>
+
+			<!-- Правые кнопки -->
+			<div class="task-actions task-actions-right">
+				<button class="action-btn">Pin</button>
+				<button class="action-btn">Remove</button>
+			</div>
+
 		</div>
 
-		<div class="task-card">
+		<!-- Оборачиваем задачку в кнопки -->
+		<div class="task-swipe-wrapper">
+
+			<!-- Левые кнопки -->
+			<div class="task-actions task-actions-left">
+				<button class="action-btn">Blank</button>
+				<button class="action-btn">Progress</button>
+				<button class="action-btn">Done</button>
+			</div>
+
+		<div class="task-card" tabindex="0" autofocus>
 			<div class="task-title">Запланировать новое аниме на киновечер</div>
 			<div class="task-description">
 				<span class="category-tag">Anime</span>
 				<span class="task-date">Date Time</span>
 			</div>
+		</div>
+
+			<!-- Правые кнопки -->
+		<div class="task-actions task-actions-right">
+			<button class="action-btn">Pin</button>
+			<button class="action-btn">Remove</button>
+		</div>
+
 		</div>
 
 	</main>
@@ -58,6 +90,6 @@
 	</nav>
 
 </div>
-
+<script type="module" src="/main.js"></script>
 </body>
 </html>
