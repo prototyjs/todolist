@@ -7,7 +7,7 @@ export default defineConfig({
     faviconPwa({
       name: "Prototy Todo App",
       shortName: "Todo App",
-      source: "public/favicon.svg",
+      source: "src/assets/favicon.svg",
       themeColor: "#21ac50",
       background: "#ffffff",
     }),
