@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "cypress": "^13.17.0",
     "@rolldown/binding-win32-x64-msvc": "^1.2.5",
     "vite": "^8.2.2",
     "vite-plugin-favicon-pwa": "^1.2.0",
