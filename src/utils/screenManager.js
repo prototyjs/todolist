@@ -11,7 +11,7 @@ class screenManager {
 		})
 	}
 	active(name) {
-		this.activeScreen.classList.remove('active')
+		this.activeScreen.classList?.remove('active')
 		this.activeScreen = this.screens[name]
 		this.activeScreen.classList.add('active')
 	}
