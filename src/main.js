@@ -1,4 +1,8 @@
-console.log('PWA is running');
+import { createScreens } from './utils/screenManager'
+
+const screens = createScreens()
+
+screens.active('task')
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(registration => {
