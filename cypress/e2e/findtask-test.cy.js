@@ -1,11 +1,11 @@
-describe('Проверка Todo App', () => {
-  it('Должен быть список задач с карточками', () => {
+describe('Todo App Verification', () => {
+  it('Should display a task list with task cards', () => {
     cy.visit('http://localhost:3000');
     
-    // Проверка списока задач
+    // Check task list display
     cy.get('.task-list').should('be.visible');
     
-    // Проверка карточки 
+    // Check task card display
     cy.get('.task-card').should('be.visible');
   });
 });
