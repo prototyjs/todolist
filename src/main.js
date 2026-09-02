@@ -1,4 +1,4 @@
-import { createScreens } from './utils/screenManager'
+import { createScreens } from './utils/screenManager.js'
 
 const screens = createScreens()
 
