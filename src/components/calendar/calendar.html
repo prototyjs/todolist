@@ -1,0 +1,153 @@
+<style>
+    body {
+        width: 320px;
+        margin: 20px;
+    }
+    .calendar-wrapper {
+        position: relative;
+        width: 100%;
+        background: #fff;
+        overflow: hidden;
+        font-family: sans-serif;
+        h3 {
+            margin: 0 0 2em 0;
+            text-align: center;
+        }
+    }
+
+    .calendar-weekdays {
+        position: absolute;
+        width: 100%;
+        margin-top: 2.3em;
+        display: grid;
+        font-size: 14px;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .calendar-viewport {
+        width: 100%;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        overflow-anchor: auto;
+    }
+    .calendar-viewport::-webkit-scrollbar {
+        display: none;
+    }
+
+    .calendar-track {
+        display: flex;
+    }
+
+    .calendar-month {
+        flex: 0 0 100%;
+        scroll-snap-align: start;
+        box-sizing: border-box;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        text-align: center;
+    }
+    .is-today {
+        outline: 1px solid gray;
+    }
+
+</style>
+<div class="calendar-wrapper">
+    <div class="calendar-weekdays" id="calendarWeekdays"></div>
+    <div class="calendar-viewport" id="calendarViewport">
+        <div class="calendar-track" id="calendarTrack"></div>
+    </div>
+</div>
+<script>
+	const viewport = document.getElementById('calendarViewport')
+	const track = document.getElementById('calendarTrack')
+	const weekdaysContainer = document.getElementById('calendarWeekdays')
+
+	const today = new Date()
+	const START = new Date(2025, 0, 1)
+	const END = new Date(2027, 11, 31)
+
+	const monthFormat = new Intl.DateTimeFormat('en-EN', { month: 'long' })
+	const weekdayFormat = new Intl.DateTimeFormat('en-EN', { weekday: 'short' })
+
+	const baseMonday = new Date(1970, 0, 5)
+	for (let i = 0; i < 7; i++) {
+		const d = new Date(baseMonday)
+		d.setDate(baseMonday.getDate() + i)
+		const name = weekdayFormat.format(d)
+		weekdaysContainer.insertAdjacentHTML('beforeend',
+			`<span>${name.charAt(0).toUpperCase() + name.slice(1)}</span>`
+		)
+	}
+
+	const createMonth = (year, month) => {
+		const wrapper = document.createElement('div')
+		wrapper.className = 'calendar-month'
+		wrapper.dataset.year = year
+		wrapper.dataset.month = month
+
+		const date = new Date(year, month, 1)
+		const title = document.createElement('h3')
+		const monthName = monthFormat.format(date)
+		title.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`
+		wrapper.appendChild(title)
+
+		const grid = document.createElement('div')
+		grid.className = 'calendar-grid'
+
+		const offset = date.getDay() === 0 ? 6 : date.getDay() - 1
+		const totalDays = new Date(year, month + 1, 0).getDate()
+
+		for (let i = 0; i < offset; i++) {
+			const empty = document.createElement('span')
+			empty.innerHTML = '&nbsp;'
+			grid.appendChild(empty)
+		}
+
+		for (let d = 1; d <= totalDays; d++) {
+			const span = document.createElement('span')
+			span.textContent = d
+
+			if (year === today.getFullYear() && month === today.getMonth() && d === today.getDate()) {
+				span.classList.add('is-today')
+			}
+			grid.appendChild(span)
+		}
+		wrapper.appendChild(grid)
+		return wrapper
+	}
+
+	const getIndex = (year, month) => {
+		return (year - START.getFullYear()) * 12 + (month - START.getMonth())
+	}
+
+	const centerOnToday = () => {
+		const w = viewport.clientWidth
+		const index = getIndex(today.getFullYear(), today.getMonth())
+		if (index >= 0 && index <= getIndex(END.getFullYear(), END.getMonth())) {
+			viewport.scrollTo({ left: w * index, behavior: 'instant' })
+		}
+	}
+
+	const renderAll = () => {
+		track.innerHTML = ''
+		const totalMonths = getIndex(END.getFullYear(), END.getMonth())
+		let d = new Date(START)
+
+		for (let i = 0; i <= totalMonths; i++) {
+			track.appendChild(createMonth(d.getFullYear(), d.getMonth()))
+			d.setMonth(d.getMonth() + 1)
+		}
+		centerOnToday()
+	}
+	renderAll()
+</script>
