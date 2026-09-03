@@ -5,7 +5,7 @@ const screens = createScreens()
 screens.active('task')
 
 function centerTasks() {
-    console.log('>>> ФУНКЦИЯ ЦЕНТРИРОВАНИЯ ЗАПУЩЕНА <<<');
+    console.log('ФУНКЦИЯ ЦЕНТРИРОВАНИЯ');
     const wrappers = document.querySelectorAll('.task-swipe-wrapper');
 
     wrappers.forEach(wrapper => {
@@ -13,9 +13,6 @@ function centerTasks() {
         if (leftActions) {
             wrapper.style.scrollBehavior = 'auto';
             wrapper.scrollLeft = leftActions.offsetWidth;
-            requestAnimationFrame(() => {
-                wrapper.style.scrollBehavior = 'smooth';
-            });
         }
     });
 }
