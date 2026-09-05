@@ -4,6 +4,21 @@ const screens = createScreens()
 
 screens.active('task')
 
+function centerTasks() {
+    console.log('ФУНКЦИЯ ЦЕНТРИРОВАНИЯ');
+    const wrappers = document.querySelectorAll('.task-swipe-wrapper');
+
+    wrappers.forEach(wrapper => {
+        const leftActions = wrapper.querySelector('.task-actions-left');
+        if (leftActions) {
+            wrapper.style.scrollBehavior = 'auto';
+            wrapper.scrollLeft = leftActions.offsetWidth;
+        }
+    });
+}
+
+centerTasks();
+
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(registration => {
         registration.update();
