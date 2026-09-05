@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
 <style>
     body {
         width: 320px;
@@ -36,6 +43,7 @@
         scrollbar-width: none;
         overflow-anchor: auto;
     }
+
     .calendar-viewport::-webkit-scrollbar {
         display: none;
     }
@@ -59,95 +67,101 @@
     .is-today {
         outline: 1px solid gray;
     }
-
+    .is-selected {
+        background-color: #3fcd6b;
+    }
 </style>
+
 <div class="calendar-wrapper">
-    <div class="calendar-weekdays" id="calendarWeekdays"></div>
-    <div class="calendar-viewport" id="calendarViewport">
-        <div class="calendar-track" id="calendarTrack"></div>
+    <div :each="weekdays" class="calendar-weekdays">
+        <span :text="item"></span>
+    </div>
+    <div class="calendar-viewport" el="viewport">
+        <div :each.once="monthsData" class="calendar-track" scope="month">
+            <div class="calendar-month">
+                <h3 :text="month.title"></h3>
+                <div :each.once="month.cells" class="calendar-grid" scope="day">
+                <span
+                        :text="day.value"
+                        :class="{
+                    'is-today': isToday(month.year, month.monthIndex, day.value),
+                    'is-selected': isSelected(month.year, month.monthIndex, day.value)
+                  }"
+                        :onclick="selectDate(month.year, month.monthIndex, day.value)"
+                ></span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-<script>
-	const viewport = document.getElementById('calendarViewport')
-	const track = document.getElementById('calendarTrack')
-	const weekdaysContainer = document.getElementById('calendarWeekdays')
+<script type="module">
+	import { prototy } from '../../../prototy.js'
 
 	const today = new Date()
-	const START = new Date(2025, 0, 1)
-	const END = new Date(2027, 11, 31)
+	const currentYear = today.getFullYear()
+	const START_YEAR = currentYear - 1
+	const END_YEAR = currentYear + 1
 
-	const monthFormat = new Intl.DateTimeFormat('en-EN', { month: 'long' })
-	const weekdayFormat = new Intl.DateTimeFormat('en-EN', { weekday: 'short' })
+	const monthFormat = new Intl.DateTimeFormat('en-En', { month: 'long' })
+	const weekdayFormat = new Intl.DateTimeFormat('en-En', { weekday: 'short' })
 
-	const baseMonday = new Date(1970, 0, 5)
-	for (let i = 0; i < 7; i++) {
-		const d = new Date(baseMonday)
-		d.setDate(baseMonday.getDate() + i)
-		const name = weekdayFormat.format(d)
-		weekdaysContainer.insertAdjacentHTML('beforeend',
-			`<span>${name.charAt(0).toUpperCase() + name.slice(1)}</span>`
-		)
-	}
-
-	const createMonth = (year, month) => {
-		const wrapper = document.createElement('div')
-		wrapper.className = 'calendar-month'
-		wrapper.dataset.year = year
-		wrapper.dataset.month = month
-
-		const date = new Date(year, month, 1)
-		const title = document.createElement('h3')
-		const monthName = monthFormat.format(date)
-		title.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`
-		wrapper.appendChild(title)
-
-		const grid = document.createElement('div')
-		grid.className = 'calendar-grid'
-
-		const offset = date.getDay() === 0 ? 6 : date.getDay() - 1
-		const totalDays = new Date(year, month + 1, 0).getDate()
-
-		for (let i = 0; i < offset; i++) {
-			const empty = document.createElement('span')
-			empty.innerHTML = '&nbsp;'
-			grid.appendChild(empty)
-		}
-
-		for (let d = 1; d <= totalDays; d++) {
-			const span = document.createElement('span')
-			span.textContent = d
-
-			if (year === today.getFullYear() && month === today.getMonth() && d === today.getDate()) {
-				span.classList.add('is-today')
+	const app = prototy({
+		root: document.body,
+		state: { selectedDate: 0 },
+		params: {
+			weekdays: (() => {
+				const base = new Date(1970, 0, 5)
+				return Array.from({ length: 7 }, (_, i) => {
+					const d = new Date(base)
+					d.setDate(base.getDate() + i)
+					const name = weekdayFormat.format(d)
+					return name.charAt(0).toUpperCase() + name.slice(1)
+				})
+			})(),
+			monthsData: (() => {
+				const list = []
+				for (let y = START_YEAR; y <= END_YEAR; y++) {
+					for (let m = 0; m < 12; m++) {
+						const date = new Date(y, m, 1)
+						const rawName = monthFormat.format(date)
+						const totalDays = new Date(y, m + 1, 0).getDate()
+						const offset = date.getDay() === 0 ? 6 : date.getDay() - 1
+						const cells = []
+						for (let i = 0; i < offset; i++) {
+							cells.push({ value: '' })
+						}
+						for (let d = 1; d <= totalDays; d++) {
+							cells.push({ value: d })
+						}
+						list.push({
+							id: `${y}-${m}`,
+							year: y,
+							monthIndex: m,
+							title: `${rawName.charAt(0).toUpperCase() + rawName.slice(1)} ${y}`,
+							cells: cells
+						})
+					}
+				}
+				return list
+			})(),
+		},
+		methods: {
+			isToday:(y, m, d) => y === today.getFullYear() && m === today.getMonth() && d === today.getDate(),
+			isSelected(y, m, d) {
+				const s = this.state.selectedDate
+				return s && y === s.getFullYear() && m === s.getMonth() && d === s.getDate()
+			},
+			selectDate(y, m, d) {
+				this.state.selectedDate = new Date(y, m, d)
 			}
-			grid.appendChild(span)
+		},
+		ready() {
+			const w = this.els.viewport.clientWidth
+			const currentMonthIndex = (today.getFullYear() - START_YEAR) * 12 + today.getMonth()
+			this.els.viewport.scrollTo({ left: w * currentMonthIndex, behavior: 'instant' })
 		}
-		wrapper.appendChild(grid)
-		return wrapper
-	}
+	})
 
-	const getIndex = (year, month) => {
-		return (year - START.getFullYear()) * 12 + (month - START.getMonth())
-	}
-
-	const centerOnToday = () => {
-		const w = viewport.clientWidth
-		const index = getIndex(today.getFullYear(), today.getMonth())
-		if (index >= 0 && index <= getIndex(END.getFullYear(), END.getMonth())) {
-			viewport.scrollTo({ left: w * index, behavior: 'instant' })
-		}
-	}
-
-	const renderAll = () => {
-		track.innerHTML = ''
-		const totalMonths = getIndex(END.getFullYear(), END.getMonth())
-		let d = new Date(START)
-
-		for (let i = 0; i <= totalMonths; i++) {
-			track.appendChild(createMonth(d.getFullYear(), d.getMonth()))
-			d.setMonth(d.getMonth() + 1)
-		}
-		centerOnToday()
-	}
-	renderAll()
 </script>
+</body>
+</html>
