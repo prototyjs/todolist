@@ -1,4 +1,18 @@
 import { createScreens } from './utils/screenManager.js'
+import { Notifications } from "./utils/notifications"
+
+const notifications = new Notifications({})
+notifications.setupAutoPermission(
+    () => {
+        console.log('notifications enabled')
+    }
+)
+document.getElementById('test-notify').addEventListener('click', async () => {
+    await notifications.show('Hello world', {
+        body: `Clicked at ${new Date().toLocaleTimeString()}`,
+        data: { url: '/' },
+    })
+})
 
 const screens = createScreens()
 
@@ -21,20 +35,21 @@ centerTasks();
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(registration => {
-        registration.update();
-    });
+        registration.update()
+    })
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('Service Worker activated...');
-        window.location.reload();
-    });
+        console.log('Service Worker activated...')
+        window.location.reload()
+    })
 }
+
 // install check
 window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    console.log('beforeinstallprompt event fired');
+    e.preventDefault()
+    console.log('beforeinstallprompt event fired')
 });
 
 window.addEventListener('appinstalled', () => {
-    console.log('app installed');
+    console.log('app installed')
 });
