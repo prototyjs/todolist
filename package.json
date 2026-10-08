@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build-sprite": "node vite.sprite.config.js"
   },
   "devDependencies": {
     "cypress": "^13.17.0",
+    "svgo": "^4.1.0",
     "vite": "^8.2.2",
     "vite-plugin-favicon-pwa": "^1.2.0",
     "vite-plugin-pwa": "^1.3.0"

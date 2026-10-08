@@ -1,0 +1,59 @@
+.calendar-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
+    h3 {
+        margin: 0 0 2em 0;
+        text-align: center;
+    }
+}
+
+.calendar-weekdays {
+    position: absolute;
+    width: 100%;
+    margin-top: 2.3em;
+    display: grid;
+    font-size: 14px;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.calendar-viewport {
+    width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overflow-anchor: auto;
+}
+
+.calendar-viewport::-webkit-scrollbar {
+    display: none;
+}
+
+.calendar-track {
+    display: flex;
+}
+
+.calendar-month {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    box-sizing: border-box;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+}
+.is-today {
+    outline: 1px solid gray;
+}
+.is-selected {
+    background-color: #3fcd6b;
+}

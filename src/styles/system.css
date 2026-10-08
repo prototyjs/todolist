@@ -1,0 +1,214 @@
+:root {
+    --font-size-title: 16px;
+    --font-size-normal: 14px;
+    --font-size-small: 12px;
+
+    --pc-bg-color: #151516;
+    --color-bg-app: #1f1e21;
+    --color-bg-glasses: #1e1e1e6b;
+    --color-bg-category: #eaeaea;
+    --color-accent: #8dc6d2b0;
+
+    --color-white: #ffffff;
+    --color-text: #f3f2fb;
+    --color-text-second: #aaaaaa;
+    --color-text-title: #8a8a8a;
+    --color-text-accent: #a3e7d1;
+    --color-border: #f8fcff1f;
+
+    --color-green-alpha: #0c290d80;
+    --color-blue-alpha: #00aae236;
+    --color-red-alpha: #6e040424;
+    --color-orange-alpha: #6b5a3c1a;
+
+    --color-green: green;
+    --color-blue: #00aae2;
+    --color-red: #dc3545;
+    --color-orange: orange;
+    --color-dark-blue: #056df2;
+    --color-gray: #505050;
+    --color-gray-100: #3b3b3b;
+    --color-brown: #452f25;
+
+    --spacing-xs: 4px;
+    --spacing-s: 8px;
+    --spacing-m: 12px;
+    --spacing-l: 20px;
+    --spacing-xl: 24px;
+    --app-min-width: 320px;
+    --blure: blur(10px);
+    --current-task-top: calc(98px + var(--spacing-m));
+}
+
+body {
+    background-color: var(--pc-bg-color);
+    font-family: "Noto Sans", sans-serif;
+    font-size: var(--font-size-normal);
+    color: var(--color-text);
+    margin: 0 auto;
+    width: 100%;
+    max-width: 610px;
+}
+[popover] {
+    color: var(--color-text-second);
+}
+body:has(.bottom-sheet:popover-open) {
+    height: 100vh;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+button {
+    display: flex;
+    align-items: center;
+    row-gap: 2px;
+    column-gap: var(--spacing-s);
+    padding: var(--spacing-xs) var(--spacing-m);
+    border-radius: 2em;
+    white-space: nowrap;
+    min-height: 27px; /* change */
+
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    sprite-icon {
+
+    }
+}
+
+.app button  {
+    transition: transform 2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    &:active {
+        transform: scale(1.1);
+        transition: transform .3s ease-out;
+    }
+}
+
+/*:root:has(:popover-open) {*/
+/*    .menu[popover] {*/
+/*        animation: none !important;*/
+/*        transition: none !important;*/
+/*    }*/
+/*}*/
+
+.statuses .menu-button {
+    transform-origin: top right;
+}
+.folders .menu-button {
+    transition: max-width .6s cubic-bezier(0.25, 1, 0.5, 1) .8s, transform .3s ease-out;
+    transform-origin: top left;
+}
+.top-bar .date {
+    transform-origin: top left;
+}
+
+
+button:has( > span:empty) {
+    gap: 0;
+}
+.outline {
+    outline: 1px solid var(--color-border) !important;
+    border-radius: 5em;
+}
+
+sprite-icon {
+    display: block;
+    flex-shrink: 0;
+}
+sprite-icon.muted {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.app:not([filter="completed"]) {
+    .done .title p {
+        text-decoration: line-through dashed currentColor 1px;
+    }
+}
+.app:not([filter="spotlighted"]) {
+    .spotlight .card-wrapper {
+        background-color: #ffffff1f;
+
+    }
+}
+.app:not([filter="removed"]) {
+    nav.bottom-bar .search-filters {
+        display: none;
+    }
+}
+
+
+header, .pin-wrapper {
+    transition: height .12s ease-in;
+    overflow: hidden;
+}
+.searchShow {
+    .current-task {
+        visibility: hidden;
+        transition-property: visibility;
+        transition-delay: 0s;
+    }
+    header, .pin-wrapper {
+        height: 0;
+    }
+}
+
+/*@keyframes jelly-bounce {*/
+/*    0% { transform: scale(1.15); }*/
+/*    20% { transform: scale3d(1.25, 0.75, 1); }*/
+/*    40% { transform: scale3d(0.75, 1.25, 1); }*/
+/*    60% { transform: scale3d(1.15, 0.85, 1); }*/
+/*    80% { transform: scale3d(0.95, 1.05, 1); }*/
+/*    100% { transform: scale3d(1, 1, 1); }*/
+/*}*/
+
+@keyframes scaleBoth {
+    0% { transform: scale(.6); }
+    100% { transform: scale(1); }
+}
+@keyframes slide-up {
+    to {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+}
+@supports (animation-timeline: scroll()) {
+    .current-task {
+        animation-timeline: scroll(root);
+        animation-range: calc(100% - 100px) 100%;
+        animation-name: changeProperties;
+        animation-fill-mode: both;
+        /*animation-timing-function: steps(1, end);*/
+    }
+}
+
+@keyframes changeProperties {
+    0% {
+        bottom: 70px;
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        top: var(--current-task-top);
+        opacity: 1;
+    }
+}
+
+.app button.smooth {
+    animation: smoothShake 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes smoothShake {
+    0%, 100% { transform: translateY(1px); }
+    15% { transform: translateY(-2px); }
+    30% { transform: translateY(2px); }
+    45% { transform: translateY(-2px); }
+    60% { transform: translateY(1px); }
+    75% { transform: translateY(-.2px); }
+    100% { transform: translateY(0); }
+}

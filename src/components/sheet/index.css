@@ -1,0 +1,62 @@
+.bottom-sheet[popover] {
+    position: fixed;
+    inset: auto 0 0 0;
+
+    width: 100%;
+    height: 300px;
+    max-height: 85vh;
+    margin: 0;
+    box-sizing: border-box;
+
+    border: none;
+    background: var(--pc-bg-color);
+    border-top-left-radius: var(--spacing-l);
+    border-top-right-radius: var(--spacing-l);
+    box-shadow: 0 -8px 30px rgba(255, 255, 255, 0.1);
+
+    padding: var(--spacing-l) var(--spacing-l) calc(var(--spacing-l) + env(safe-area-inset-bottom)) var(--spacing-l);
+
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+
+    transform: translateY(100%);
+    transition:
+            transform .2s cubic-bezier(0.32, 0.94, 0.6, 1),
+            display .2s allow-discrete;
+}
+.sheet-content {
+    max-height: var(--spacing-l);
+}
+
+.bottom-sheet[popover]:popover-open {
+    transform: translateY(0);
+}
+
+@starting-style {
+    .bottom-sheet[popover]:popover-open {
+        transform: translateY(100%);
+    }
+}
+
+.bottom-sheet[popover]::backdrop {
+    background: rgba(0, 0, 0, .2);
+    opacity: 0;
+    transition: opacity 0.3s ease, display 0.3s allow-discrete;
+}
+
+.bottom-sheet[popover]:popover-open::backdrop {
+    opacity: 1;
+}
+
+@starting-style {
+    .bottom-sheet[popover]:popover-open::backdrop {
+        opacity: 0;
+    }
+}
+
+.close-btn {
+    top: var(--spacing-m);
+    right: var(--spacing-m);
+    aspect-ratio: 1 / 1;
+}

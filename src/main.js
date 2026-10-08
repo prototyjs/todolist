@@ -28,7 +28,7 @@ function centerTasks() {
             wrapper.style.scrollBehavior = 'auto';
             wrapper.scrollLeft = leftActions.offsetWidth;
         }
-    });
+    })
 }
 
 centerTasks();

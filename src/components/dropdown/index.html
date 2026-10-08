@@ -1,0 +1,22 @@
+<button class="menu-button outline" :popovertarget="id">
+    <sprite-icon :name="items[currentIndex].icon"></sprite-icon>
+    <span :text="items[currentIndex].text !== 'All' ? items[currentIndex].text : ''"></span>
+</button>
+<div :id="id" popover class="menu outline" :onclick="el.hidePopover()">
+    <ul :each.once="items">
+        <li :class="{ active: currentIndex === itemIndex }">
+            <button :onclick="active(itemIndex)">
+                <sprite-icon :name="item.icon"></sprite-icon>
+                <span :text="item.text">All</span>
+            </button>
+        </li>
+    </ul>
+    <ul :each.once="actions" class="actions">
+        <li :class="{ dangerous: item.dangerous }" :hidden="item.for && (item.for !== items[currentIndex].text)">
+            <button :onclick="emit(item.text)">
+                <sprite-icon :name="item.icon"></sprite-icon>
+                <span :text="item.text"></span>
+            </button>
+        </li>
+    </ul>
+</div>

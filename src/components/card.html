@@ -1,0 +1,42 @@
+<div class="swipe-wrapper" el="wrapper">
+    <div class="actions actions-left" el="actionsLeft">
+        <button class="action-btn done">
+            <sprite-icon name="checked" :class="{ muted: item.completed }"></sprite-icon>
+            <span :text="item.completed ? 'UnDone' : 'Done'"></span>
+        </button>
+        <button class="action-btn start">
+            <sprite-icon :name="item.playing ? 'pause' : 'play'" :class="{ muted: item.playing }"></sprite-icon>
+            <span :text="item.playing ? 'Pause' : 'Start'"></span>
+        </button>
+    </div>
+
+    <div class="card" :class="{ done: item.completed, spotlight: !item.completed && item.spotlight }" el="center">
+        <div class="card-wrapper">
+            <div class="title">
+                <p :text="item.title"></p>
+                <sprite-icon :name="icon(item)"></sprite-icon>
+            </div>
+            <div class="data">
+                <span class="category" :text="item.category"></span>
+                <span class="date">12.12.2020 00:00</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="actions actions-right" el="actionsRight">
+        <button class="action-btn pin" el="pinBtn">
+            <sprite-icon name="pin" :class="{ muted: item.pin }"></sprite-icon>
+            <span :text="item.pin ? 'UnPin' : 'Pin'">Pin</span>
+        </button>
+        <button class="action-btn spotlight" el="spotlightBtn">
+            <sprite-icon name="spotlight" :class="{ muted: item.spotlight }"></sprite-icon>
+            <span :text="item.spotlight ? 'UnSpotlight' : 'Spotlight'"></span>
+        </button>
+        <button class="action-btn remove" el="removeBtn">
+            <sprite-icon name="remove" :class="{ muted: item.removed }"></sprite-icon>
+            <span :text="item.removed ? 'Restore' : 'Remove'"></span>
+        </button>
+    </div>
+
+</div>

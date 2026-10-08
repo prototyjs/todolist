@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            font-size: 40px;
+            color: black;
+            cursor: pointer;
+        }
+
+        .smooth {
+            animation: smoothShake .8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes smoothShake {
+            0%, 100% { transform: translateY(1px); }
+            15% { transform: translateY(-2px); }
+            30% { transform: translateY(2px); }
+            45% { transform: translateY(-2px); }
+            60% { transform: translateY(1px); }
+            75% { transform: translateY(-.2px); }
+            90% { transform: translateY(0); }
+        }
+
+    </style>
+    <script type="module" defer src="./sprite-icon.js"></script>
+    </head>
+<body>
+    <sprite-icon name="calendar"></sprite-icon>
+    <sprite-icon name="stop"></sprite-icon>
+    <sprite-icon name="all"></sprite-icon>
+    <sprite-icon name="categories"></sprite-icon>
+    <sprite-icon name="clear"></sprite-icon>
+    <sprite-icon name="time"></sprite-icon>
+    <sprite-icon name="favorites"></sprite-icon>
+    <sprite-icon name="favorites-line"></sprite-icon>
+    <sprite-icon name="folder"></sprite-icon>
+    <sprite-icon name="lock"></sprite-icon>
+    <sprite-icon name="checked"></sprite-icon>
+    <sprite-icon name="checked-line"></sprite-icon>
+    <sprite-icon name="notifications"></sprite-icon>
+    <sprite-icon name="pause"></sprite-icon>
+    <sprite-icon name="pin"></sprite-icon>
+    <sprite-icon name="pin-line"></sprite-icon>
+    <sprite-icon name="play"></sprite-icon>
+    <sprite-icon name="plus"></sprite-icon>
+    <sprite-icon name="remove"></sprite-icon>
+    <sprite-icon name="remove-line"></sprite-icon>
+    <sprite-icon name="search"></sprite-icon>
+    <sprite-icon name="settings"></sprite-icon>
+    <sprite-icon name="params"></sprite-icon>
+    <script>
+	    const icons = document.querySelectorAll('sprite-icon')
+        icons.forEach(icon => {
+	        icon.onanimationend = () => icon.classList.remove('smooth')
+	        icon.onclick = () => {
+		        icon.classList.remove('smooth')
+		        icon.classList.add('smooth')
+	        }
+        })
+    </script>
+</body>
+</html>

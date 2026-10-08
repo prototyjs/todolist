@@ -1,6 +1,10 @@
 import { defineConfig } from "vite"
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { VitePWA } from "vite-plugin-pwa"
 import faviconPwa from "vite-plugin-favicon-pwa"
+
+const __dirname = resolve(fileURLToPath(import.meta.url), '..')
 
 export default defineConfig({
   plugins: [
@@ -34,4 +38,10 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+	resolve: {
+		alias: {
+			'@': resolve(__dirname, 'src'),
+			'@icons': resolve(__dirname, 'node_modules/.vite-icon')
+		}
+	}
 })

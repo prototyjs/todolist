@@ -1,21 +1,26 @@
-class ApiService {
-	constructor(storageKey = 'rayDoDB') {
-		this.storageKey = storageKey
-		this.todos = this.load()
+class Service {
+	constructor() {
+		this.storageKey = 'rayDoDB'
+		this.pinsKey = 'rayDoPin'
+		this.todos = this.load(this.storageKey)
+		this.pins = this.load(this.pinsKey)
+		this.maxPins = 1
+		this.autoCleaningTime = 30
 	}
-	load() {
+	load(key) {
 		try {
-			const data = localStorage.getItem(this.storageKey)
+			const data = localStorage.getItem(key)
 			return data ? JSON.parse(data) : []
 		} catch (error) {
-			console.error('Error loading todos:', error)
+ 			console.error('Error loading:', error)
 			return []
 		}
 	}
 	generateId() {
 		const array = new Uint8Array(8)
-		crypto.getRandomValues(array)
-		return Array.from(array, byte => byte.toString(36).padStart(2, '0')).join('')
+		crypto.getRandomValues(array);
+		const bigIntValue = array.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n)
+		return bigIntValue.toString(36)
 	}
 	save() {
 		try {
@@ -23,6 +28,19 @@ class ApiService {
 		} catch (error) {
 			console.error('Error saving todos:', error)
 		}
+	}
+	pin(id) {
+		const index = this.pins.findIndex(item => item === id)
+		if (index === -1) {
+			if (this.pins.length === this.maxPins) {
+				this.pins[0] = id
+			} else {
+				this.pins.unshift(id)
+			}
+		} else {
+			this.pins.splice(index, 1)
+		}
+		localStorage.setItem(this.pinsKey, JSON.stringify(this.pins))
 	}
 	add({ title, description = '', category, period }) {
 		if (!title || title.trim() === '') {
@@ -37,14 +55,37 @@ class ApiService {
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 			completed: false,
-			removed: false
+			removed: false,
+			spotlight: false,
+			todoDate: null, // const now = new Date().toISOString();
+			notification: {
+				todoTime: null,
+				triggerAt: '2026-09-25T10:30:00.000Z',
+				//  'daily', 'weekly', 'monthly'
+				repeatInterval: null
+			}
 		}
 		this.todos.push(newTodo)
 		this.save()
 		return newTodo
 	}
+	handleRepeating(todo) {
+		const currentTrigger = new Date(todo.notification.triggerAt);
+
+		if (todo.notification.repeatInterval === 'daily') {
+			currentTrigger.setDate(currentTrigger.getDate() + 1);
+			todo.notification.triggerAt = currentTrigger.toISOString();
+		} else if (todo.notification.repeatInterval === 'weekly') {
+			currentTrigger.setDate(currentTrigger.getDate() + 7);
+			todo.notification.triggerAt = currentTrigger.toISOString();
+		} else {
+
+			todo.notification.triggerAt = null;
+		}
+		return todo;
+	}
 	delete(id) {
-		const index = this.todos.findIndex(todo => todo.id === id);
+		const index = this.todos.findIndex(item => item.id === id)
 		if (index === -1) {
 			throw new Error(`Todo with id ${id} not found`)
 		}
@@ -58,24 +99,13 @@ class ApiService {
 		if (!todo) {
 			throw new Error(`Todo with id ${id} not found`)
 		}
-		if (item.title !== undefined) {
-			todo.title = item.title.trim()
-		}
-		if (item.description !== undefined) {
-			todo.description = item.description.trim()
-		}
-		if (item.category !== undefined) {
-			todo.category = item.category.trim()
-		}
-		if (item.period !== undefined) {
-			todo.period = item.period.trim()
-		}
-		if (item.completed !== undefined) {
-			todo.completed = Boolean(item.completed)
-		}
-		if (item.removed !== undefined) {
-			todo.removed = Boolean(item.removed)
-		}
+
+		['title', 'description', 'category', 'period', 'completed', 'removed'].forEach((key) => {
+			if (item[key] !== undefined) {
+				todo[key] = (typeof todo[key] === 'boolean') ?  Boolean(item[key]) : item[key].trim()
+			}
+		})
+
 		todo.updatedAt = new Date().toISOString()
 		this.save()
 		return todo

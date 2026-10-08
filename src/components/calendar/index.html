@@ -1,0 +1,22 @@
+<div class="calendar-wrapper">
+    <div :each="weekdays" class="calendar-weekdays">
+        <span :text="item"></span>
+    </div>
+    <div class="calendar-viewport" el="viewport">
+        <div :each.once="monthsData" class="calendar-track" scope="month">
+            <div class="calendar-month">
+                <h3 :text="month.title"></h3>
+                <div :each.once="month.cells" class="calendar-grid" scope="day">
+                <span
+                        :text="day.value"
+                        :class="{
+                    'is-today': isToday(month.year, month.monthIndex, day.value),
+                    'is-selected': isSelected(month.year, month.monthIndex, day.value)
+                  }"
+                        :onclick="selectDate(month.year, month.monthIndex, day.value)"
+                ></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
