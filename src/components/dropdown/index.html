@@ -11,8 +11,8 @@
             </button>
         </li>
     </ul>
-    <ul :each.once="actions" class="actions">
-        <li :class="{ dangerous: item.dangerous }" :hidden="item.for && (item.for !== items[currentIndex].text)">
+    <ul :each.once="actions" class="actions" :hidden="actions.findIndex(action => (action.for === '#') || (action.for === items[currentIndex].text)) === -1">
+        <li :class="{ dangerous: item.dangerous }" :hidden="item.for && item.for !== '#' && (item.for !== items[currentIndex].text)">
             <button :onclick="emit(item.text)">
                 <sprite-icon :name="item.icon"></sprite-icon>
                 <span :text="item.text"></span>

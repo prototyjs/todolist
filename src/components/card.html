@@ -1,41 +1,60 @@
 <div class="swipe-wrapper" el="wrapper">
-    <div class="actions actions-left" el="actionsLeft">
-        <button class="action-btn done">
+    <div class="actions actions-left" el="actionsLeft" :hidden="filters.status == 'Removed'">
+        <button class="action-btn done" :disabled="countdownName">
             <sprite-icon name="checked" :class="{ muted: item.completed }"></sprite-icon>
             <span :text="item.completed ? 'UnDone' : 'Done'"></span>
         </button>
-        <button class="action-btn start">
+        <button class="action-btn start" :disabled="countdownName">
             <sprite-icon :name="item.playing ? 'pause' : 'play'" :class="{ muted: item.playing }"></sprite-icon>
             <span :text="item.playing ? 'Pause' : 'Start'"></span>
         </button>
     </div>
 
-    <div class="card" :class="{ done: item.completed, spotlight: !item.completed && item.spotlight }" el="center">
-        <div class="card-wrapper">
+    <div class="card" :class="{ keep: item.keep, removed: item.removed, done: !item.removed && item.completed, spotlight: !item.removed && !item.completed && item.spotlight }" el="center">
+        <div class="card-wrapper" :onclick="viewTask('edit', item)">
             <div class="title">
                 <p :text="item.title"></p>
                 <sprite-icon :name="icon(item)"></sprite-icon>
             </div>
             <div class="data">
                 <span class="category" :text="item.category"></span>
-                <span class="date">12.12.2020 00:00</span>
+                <div class="date-wrapper">
+                    <span class="frequency" :text="item.frequency" :hidden="!item.frequency"></span>
+                    <span class="date">12.12.2020 00:00</span>
+                </div>
             </div>
         </div>
 
     </div>
 
     <div class="actions actions-right" el="actionsRight">
-        <button class="action-btn pin" el="pinBtn">
+        <button class="action-btn pin" el="pinBtn" :hidden="filters.status === 'Removed'" :disabled="countdownName">
             <sprite-icon name="pin" :class="{ muted: item.pin }"></sprite-icon>
             <span :text="item.pin ? 'UnPin' : 'Pin'">Pin</span>
         </button>
-        <button class="action-btn spotlight" el="spotlightBtn">
+        <button class="action-btn spotlight" el="spotlightBtn" :hidden="filters.status == 'Removed'" :disabled="countdownName">
             <sprite-icon name="spotlight" :class="{ muted: item.spotlight }"></sprite-icon>
             <span :text="item.spotlight ? 'UnSpotlight' : 'Spotlight'"></span>
         </button>
-        <button class="action-btn remove" el="removeBtn">
+        <button class="action-btn remove" el="removeBtn" :hidden="item.is_active || filters.status == 'Removed'" :disabled="countdownName && (countdownName !== 'remove')">
             <sprite-icon name="remove" :class="{ muted: item.removed }"></sprite-icon>
-            <span :text="item.removed ? 'Restore' : 'Remove'"></span>
+            <span :text="item.removed ? 'Undo' : 'Remove'"></span>
+        </button>
+        <button class="action-btn keep" :hidden="filters.status !== 'Removed'" :onclick="item.keep = !item.keep">
+            <sprite-icon :name="item.keep ? 'unlock' : 'lock'" :class="{ muted: item.keep }"></sprite-icon>
+            <span :text="item.keep ? 'UnKeep' : 'Keep'"></span>
+        </button>
+        <button class="action-btn restore" :hidden="filters.status !== 'Removed'" :onclick="viewTask('restore', item)">
+            <sprite-icon name="restore"></sprite-icon>
+            <span>Restore</span>
+        </button>
+        <button class="action-btn delete" :hidden="filters.status !== 'Removed'" :onclick="eventBus.emit('dialog:open', { type: 'delete', action: () => {} })">
+            <sprite-icon name="destroy"></sprite-icon>
+            <span>Delete</span>
+        </button>
+        <button class="action-btn skip" :hidden="!item.is_active || filters.status === 'Removed'" :disabled="countdownName && (countdownName !== 'skip')" el="skipBtn">
+            <sprite-icon name="skip" :class="{ muted: item.skipped }"></sprite-icon>
+            <span :text="item.skipped ? 'Undo' : 'Skip'"></span>
         </button>
     </div>
 

@@ -24,11 +24,12 @@
     --color-green: green;
     --color-blue: #00aae2;
     --color-red: #dc3545;
+    --color-pink: #ec33a2;
     --color-orange: orange;
     --color-dark-blue: #056df2;
     --color-gray: #505050;
     --color-gray-100: #3b3b3b;
-    --color-brown: #452f25;
+    --color-turquoise: #217371 ;
 
     --spacing-xs: 4px;
     --spacing-s: 8px;
@@ -36,6 +37,7 @@
     --spacing-l: 20px;
     --spacing-xl: 24px;
     --app-min-width: 320px;
+    --app-max-width: 600px;
     --blure: blur(10px);
     --current-task-top: calc(98px + var(--spacing-m));
 }
@@ -47,15 +49,21 @@ body {
     color: var(--color-text);
     margin: 0 auto;
     width: 100%;
-    max-width: 610px;
+    max-width: var(--app-max-width);
 }
 [popover] {
     color: var(--color-text-second);
 }
-body:has(.bottom-sheet:popover-open) {
+[hidden] {
+    display: none !important;
+}
+body:has(.bottom-sheet:popover-open) section, body:has(dialog[open]) section {
     height: 100vh;
     overflow: hidden;
     overscroll-behavior: none;
+}
+li.dangerous {
+    color: var(--color-red);
 }
 button {
     display: flex;
@@ -66,7 +74,7 @@ button {
     border-radius: 2em;
     white-space: nowrap;
     min-height: 27px; /* change */
-
+    line-height: 1.2;
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -80,20 +88,13 @@ button {
     }
 }
 
-.app button  {
+.app button:not(:disabled)  {
     transition: transform 2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     &:active {
         transform: scale(1.1);
         transition: transform .3s ease-out;
     }
 }
-
-/*:root:has(:popover-open) {*/
-/*    .menu[popover] {*/
-/*        animation: none !important;*/
-/*        transition: none !important;*/
-/*    }*/
-/*}*/
 
 .statuses .menu-button {
     transform-origin: top right;
@@ -112,15 +113,24 @@ button:has( > span:empty) {
 }
 .outline {
     outline: 1px solid var(--color-border) !important;
-    border-radius: 5em;
+    border-radius: var(--spacing-l);
 }
 
 sprite-icon {
     display: block;
     flex-shrink: 0;
 }
-sprite-icon.muted {
-    color: rgba(255, 255, 255, 0.5);
+
+.list .action-btn sprite-icon.muted:before {
+    background-color: var(--color-gray-100);
+}
+
+.card.done .title p {
+    color: var(--color-text-title);
+}
+.card.pin {
+    background-color: var(--color-bg-app);
+
 }
 
 .app:not([filter="completed"]) {
@@ -131,15 +141,29 @@ sprite-icon.muted {
 .app:not([filter="spotlighted"]) {
     .spotlight .card-wrapper {
         background-color: #ffffff1f;
-
     }
 }
+
 .app:not([filter="removed"]) {
     nav.bottom-bar .search-filters {
         display: none;
     }
+    .card.removed .card-wrapper sprite-icon {
+        color: var(--color-gray);
+    }
 }
 
+
+.app[filter="removed"] {
+    .card .card-wrapper {
+        .title {
+            color: var(--color-text-title);
+        }
+        sprite-icon {
+            color: var(--color-gray);
+        }
+    }
+}
 
 header, .pin-wrapper {
     transition: height .12s ease-in;
@@ -156,15 +180,6 @@ header, .pin-wrapper {
     }
 }
 
-/*@keyframes jelly-bounce {*/
-/*    0% { transform: scale(1.15); }*/
-/*    20% { transform: scale3d(1.25, 0.75, 1); }*/
-/*    40% { transform: scale3d(0.75, 1.25, 1); }*/
-/*    60% { transform: scale3d(1.15, 0.85, 1); }*/
-/*    80% { transform: scale3d(0.95, 1.05, 1); }*/
-/*    100% { transform: scale3d(1, 1, 1); }*/
-/*}*/
-
 @keyframes scaleBoth {
     0% { transform: scale(.6); }
     100% { transform: scale(1); }
@@ -177,7 +192,7 @@ header, .pin-wrapper {
 }
 @supports (animation-timeline: scroll()) {
     .current-task {
-        animation-timeline: scroll(root);
+        animation-timeline: scroll(section[name="main"]);
         animation-range: calc(100% - 100px) 100%;
         animation-name: changeProperties;
         animation-fill-mode: both;
@@ -211,4 +226,51 @@ header, .pin-wrapper {
     60% { transform: translateY(1px); }
     75% { transform: translateY(-.2px); }
     100% { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.action-btn sprite-icon {
+    position: relative;
+}
+
+.list .action-btn {
+    transition: color .3s cubic-bezier(0.25, 1, 0.5, 1);
+    sprite-icon:before {
+        transition: opacity .3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    &:before {
+        transition: color .3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+}
+
+.action-btn:disabled {
+    pointer-events: none;
+    sprite-icon:before {
+        opacity: .3;
+    }
+    color: var(--color-gray);
+}
+
+.list .action-btn.countdown  sprite-icon::before {
+    background-color: transparent !important;
+}
+.action-btn.countdown sprite-icon {
+    color: var(--color-btn);
+}
+.action-btn.countdown sprite-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    background: conic-gradient(var(--color-btn) var(--progress), transparent 0);
+    mask-image: radial-gradient(circle, transparent .8em, #000 calc(.8em + 1px));
+    z-index: -1;
 }

@@ -7,7 +7,6 @@
     backdrop-filter: var(--blure);
     min-width: 150px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-radius: var(--spacing-l);
     position: absolute;
     margin-top: var(--spacing-s);
     padding: var(--spacing-s);
@@ -25,17 +24,12 @@
             background-color: var(--color-gray-100);
             border-radius: var(--spacing-s);
         }
-        li.dangerous {
-            color: var(--color-red);
-        }
         li[hidden] {
             display: none;
         }
     }
     ul.actions {
         margin-top: var(--spacing-xs);
-        li:first-child {
-            border-top: 1px solid var(--color-border);
-        }
+        border-top: 1px solid var(--color-border);
     }
 }

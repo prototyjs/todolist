@@ -1,0 +1,44 @@
+section[name="settings"] {
+    .content {
+        padding: var(--spacing-s);
+    }
+    ul {
+        border-radius: var(--spacing-l);
+        margin-bottom: var(--spacing-l);
+        overflow: hidden;
+    }
+    li {
+        background-color: var(--color-bg-app);
+        margin-bottom: 1px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-m);
+        padding: var(--spacing-m) var(--spacing-l);
+        line-height: 16px;
+        span {
+            color: var(--color-gray);
+            margin-left: auto;
+            margin-right: var(--spacing-s);
+            font-weight: 500;
+            &:after {
+                content: '';
+                position: absolute;
+                right: var(--spacing-m);
+                width: var(--spacing-s);
+                height: var(--spacing-s);
+                border-right: 1px solid var(--color-gray);
+                border-bottom: 1px solid var(--color-gray);;
+                transform: rotate(-45deg) translateY(-50%);
+                top: calc(50% - 1px);
+            }
+        }
+        input[type="checkbox"] {
+            margin-left: auto;
+        }
+
+    }
+    li:last-child {
+        margin-bottom: 0;
+    }
+}

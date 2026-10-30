@@ -1,0 +1,83 @@
+dialog {
+    display: none;
+    margin: auto;
+    width: calc(100% - 2 * var(--spacing-l));
+    max-width: var(--app-min-width);
+    background-color: var(--pc-bg-color);
+    backdrop-filter: blur(2px);
+    color: var(--color-text-second);
+    padding: var(--spacing-l) var(--spacing-xl);
+    flex-direction: column;
+    align-items: center;
+    font-size: var(--font-size-title);
+    border-radius: var(--spacing-l);
+    h4 {
+        text-align: center;
+        line-height: 1.4;
+
+    }
+    .buttons {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: var(--spacing-xl);
+        margin-top: var(--spacing-xl);
+        button {
+            min-width: 100px;
+            height: 32px;
+            justify-content: center;
+            color: var(--color-text-second);
+        }
+        button:not(.outline) {
+            /*background-color: rgba(0, 0, 0, .3);*/
+            background-color: var(--color-gray-100);
+            color: var(--color-text);
+        }
+
+        button.active {
+            background-color: var(--color-text);
+            color: var(--pc-bg-color);
+            opacity: 1;
+        }
+    }
+    sprite-icon {
+        font-size: 32px;
+        margin-bottom: var(--spacing-m);
+        color: var(--color-text-second);
+        opacity: .6;
+
+    }
+    .buttons:has(.secondary:not([hidden])) {
+        flex-direction: column;
+        width: min-content;
+        gap: var(--spacing-m);
+        button {
+            width: auto;
+        }
+    }
+}
+
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, .6);
+}
+
+dialog[open] {
+    display: flex;
+    sprite-icon {
+        animation: spin-every-5s 5s ease-in-out infinite 4s;
+    }
+}
+
+@keyframes spin-every-5s {
+    0% {
+        transform: rotate(0deg);
+    }
+    20% {
+        transform: rotate(360deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+

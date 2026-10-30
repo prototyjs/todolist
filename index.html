@@ -3,93 +3,120 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Todo App</title>
-	<link rel="stylesheet" href="/src/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles/reset.css">
+    <link rel="stylesheet" href="/src/styles/system.css">
+	<link rel="stylesheet" href="/src/styles/style.css">
+    <script type="module" defer src="./sprite-icon.js"></script>
+    <script type="module" src="./src/app.js" defer></script>
 </head>
 <body>
-
-<div class="app-container">
-
-	<!-- Шапка: Квадратик с крестиком, инпут и лейбел -->
-	<header class="app-header">
-		<div class="search-row">
-			<div class="color-square">✕</div>
-			<input class="search-input">
-		</div>
-
-		<div class="labels-row">
-			<div class="label">Code</div>
-			<div class="label">Anime</div>
-			<div class="label">Document</div>
-			<div class="label">Anime</div>
-			<div class="label">Document</div>
-			<div class="label">Code</div>
-		</div>
-	</header>
-
-	<!-- Список задач -->
-	<main class="task-list">
-		<!-- Оборачиваем задачку в кнопки -->
-		<div class="task-swipe-wrapper">
-
-			<!-- Левые кнопки -->
-			<div class="task-actions task-actions-left">
-				<button class="action-btn">Blank</button>
-				<button class="action-btn">Progress</button>
-				<button class="action-btn">Done</button>
-			</div>
-
-			<div class="task-card" tabindex="0" autofocus>
-				<div class="task-title">Сверстать всех на верх</div>
-				<div class="task-description">
-					<span class="category-tag">Code</span>
-					<span class="task-date">Date Time</span>
-				</div>
-			</div>
-
-			<!-- Правые кнопки -->
-			<div class="task-actions task-actions-right">
-				<button class="action-btn">Pin</button>
-				<button class="action-btn">Remove</button>
-			</div>
-
-		</div>
-
-		<!-- Оборачиваем задачку в кнопки -->
-		<div class="task-swipe-wrapper">
-
-			<!-- Левые кнопки -->
-			<div class="task-actions task-actions-left">
-				<button class="action-btn">Blank</button>
-				<button class="action-btn">Progress</button>
-				<button class="action-btn">Done</button>
-			</div>
-
-		<div class="task-card" tabindex="0" autofocus>
-			<div class="task-title">Запланировать новое аниме на киновечер</div>
-			<div class="task-description">
-				<span class="category-tag">Anime</span>
-				<span class="task-date">Date Time</span>
-			</div>
-		</div>
-
-			<!-- Правые кнопки -->
-		<div class="task-actions task-actions-right">
-			<button class="action-btn">Pin</button>
-			<button class="action-btn">Remove</button>
-		</div>
-
-		</div>
-
-	</main>
-
-	<!-- Нижнее меню -->
-	<nav class="bottom-nav">
-		<button class="nav-settings">Settings</button>
-		<button class="nav-item-add" id="test-notify">+</button>
-		<button class="nav-calendar">Calendar</button>
-	</nav>
-
+<div class="app" :class="{ searchShow }" :filter="filters.status.toLowerCase()">
+    <div class="screens" el="screens">
+        <section name="settings" hidden>
+            <div class="screen-top-bar">
+                <button class="outline" :onclick="screens.goToMain()">Close</button>
+                <h4><sprite-icon name="control"></sprite-icon>Settings</h4>
+            </div>
+            <div class="content">
+                <ul>
+                    <li :onclick="screens.goTo(1)"><sprite-icon name="catalog"></sprite-icon>Categories</li>
+                </ul>
+                <ul>
+                    <li><sprite-icon name="sound"></sprite-icon>Notifications<input type="checkbox" /></li>
+                </ul>
+                <ul>
+                    <li><sprite-icon name="export"></sprite-icon>Export tasks<span>raydo_tasks_2026</span></li>
+                    <li><sprite-icon name="import"></sprite-icon>Import tasks</button></li>
+                </ul>
+            </div>
+        </section>
+        <section name="categories" el="categoriesSection" hidden></section>
+        <section name="main">
+            <div class="main-wrapper">
+                <header>
+                    <div class="header-wrapper">
+                        <div class="top-bar">
+                            <button class="date outline" :onclick="els.sheet.showPopover()">
+                                <sprite-icon name="calendar"></sprite-icon>
+                                <span>Last Week</span>
+                            </button>
+                            <div class="statuses" el="statuses"></div>
+                        </div>
+                        <div class="categories">
+                            <div class="folders" el="folders"></div>
+                            <div class="categories-wrapper">
+                                <ul class="items" el="categories">
+                                    <li>My Job</li>
+                                    <li class="active">My Favorite</li>
+                                    <li>My Favorite</li>
+                                    <li>My Favorite</li>
+                                    <li>My Favorite</li>
+                                    <li>My Favorite</li>
+                                    <li>My Favorite</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <div class="pin-wrapper">
+                    <div class="list" :component="components.card" :props="{ item: taskPin }"></div>
+                </div>
+                <main class="list" :each="tasks" :component="components.card"></main>
+                <div class="total">Showing <span :text="tasks.length">0</span> tasks</div>
+                <div class="current-task">
+                    <div class="title" :text="taskPlay.title"></div>
+                    <div class="time">00:00:00</div>
+                </div>
+                <nav class="bottom-bar outline">
+                    <div class="bottom-wrapper">
+                        <button class="settings" :onclick="screens.goTo(0)">
+                            <sprite-icon name="control"></sprite-icon>
+                        </button>
+                        <button class="add">
+                            <sprite-icon name="new"></sprite-icon>
+                        </button>
+                        <div class="search-bar">
+                            <sprite-icon name="search"></sprite-icon>
+                            <input type="text" placeholder="Search...">
+                        </div>
+                        <button class="search" el="searchBtn">
+                            <sprite-icon :name="searchShow ? 'close': 'search'"></sprite-icon>
+                        </button>
+                    </div>
+                    <div class="search-filters outline">
+                        <button :class="{ active: filters.isRemoved }" :onclick="filters.isRemoved = true" :text="ui.filters.search[0]">Removed</button>
+                        <button :class="{ active: !filters.isRemoved }" :onclick="filters.isRemoved = false" :text="ui.filters.search[1]">Active</button>
+                    </div>
+                </nav>
+            </div>
+        </section>
+        <section name="task" :onclick="screens.goToMain()" hidden>
+            <div class="screen-top-bar">
+                <button class="outline">Close</button>
+                <h4><sprite-icon name="edit"></sprite-icon>Task</h4>
+                <button class="outline">Done</button>
+            </div>
+        </section>
+    </div>
+    <div popover="auto" id="bottom-sheet" class="bottom-sheet" el="sheet">
+        <button popovertarget="bottom-sheet" popovertargetaction="hide" class="close-btn outline">
+            <sprite-icon name="close"></sprite-icon>
+        </button>
+        <div class="sheet-content" el="sheet-content"></div>
+    </div>
+    <dialog id="dialogElement">
+        <sprite-icon name="warn2"></sprite-icon>
+        <h4 :text="dialog.text"></h4>
+        <div class="buttons">
+            <button class="outline" :onclick="dialog.action()" :text="dialog.actionName"></button>
+            <button class="secondary" :onclick="dialog.action2()" :text="dialog.actionName2" :hidden="!dialog.actionName2"></button>
+            <button class="active" :onclick="dialogElement.close()">Cancel</button>
+        </div>
+    </dialog>
 </div>
-<script type="module" src="/src/main.js"></script>
 </body>
 </html>

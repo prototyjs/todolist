@@ -1,10 +1,19 @@
 import { prototy } from '@/prototy.js'
 import card from './components/card.html?raw'
+import { createScreenSlider } from './components/screens'
 import { createDropDown } from './components/dropdown'
 import { createCalendar } from './components/calendar'
+import { createCategories } from './components/categories'
+import { runTimer } from './utils/runTimer'
+import './utils/eventBus.js'
 import ui from './ui'
 import tasks from './mock/tasks.js'
+import './components/screens/index.css'
+import './components/settings/index.css'
+import './components/categories/index.css'
 import './components/sheet/index.css'
+import './components/dialog/index.css'
+import './styles/switch.css'
 
 const animationBtn = {
 	onanimationend: ({ el }) => el.classList.remove('smooth'),
@@ -17,10 +26,11 @@ const animationBtn = {
 const app = prototy({
 	root: document.body,
 	params: {
+		screens: null,
 		ui,
 		lastActiveCard: null,
 		taskPin: tasks[3],
-		taskPlay: tasks[tasks.length - 1],
+		taskPlay: tasks[4]
 	},
 	state: {
 		searchShow: false,
@@ -28,9 +38,17 @@ const app = prototy({
 			status: ui.defaultStatus,
 			folder: 'Any folder', // Main
 			isRemoved: true,
-			isCompleted: false
+			isCompleted: false,
 		},
-		tasks
+		countdownName: '',
+		tasks,
+		dialog: {
+			text: '',
+			actionName: '',
+			action: () => {},
+			actionName2: '',
+			action2: () => {},
+		}
 	},
 	setters: {
 		'filters.status'(v) {
@@ -40,20 +58,23 @@ const app = prototy({
 			return v
 		}
 	},
+	computed: {},
 	methods: {
 		icon(item) {
-			const _item ={
-				...item,
-				playing: item === this.params.taskPin,
-			}
 			const icons = {
-				removed: 'remove',
+				keep: 'lock',
 				pin: 'pin',
 				playing: 'play',
 				completed: 'checked',
 				spotlight: 'spotlight'
 			}
-			return icons[Object.keys(icons).find(key => _item[key])]
+			return icons[Object.keys(icons).find(key => item[key])]
+		},
+		dialogOpen(type, action) {
+
+		},
+		viewTask() {
+			this.params.screens.goTo(3)
 		}
 	},
 	elements: {
@@ -111,18 +132,48 @@ const app = prototy({
 				},
 				actionsLeft: {
 					onclick({ el }) {
-						el.parentElement.scrollLeft = el.parentElement.clientWidth
+						if (!el.parentElement.classList.contains('removing')) {
+							//el.parentElement.scrollLeft = el.parentElement.clientWidth
+						}
 					}
 				},
 				actionsRight: {
 					onclick({ el }) {
-						el.parentElement.scrollLeft = 0
+						if (!el.parentElement.classList.contains('removing')) {
+							//el.parentElement.scrollLeft = 0
+						}
+					}
+				},
+				removeBtn: {
+					onclick({ el, props }) {
+						console.log(props)
+						this.state.countdownName = 'remove'
+						this.state.tasks[6].removed = true
+						runTimer(el, 3, () => {
+							this.state.countdownName = ''
+						},() => {
+							this.state.tasks[6].removed = false
+							this.state.countdownName = ''
+						})
+					}
+				},
+				skipBtn: {
+					onclick({ el }) {
+						this.state.tasks[7].skipped = true
+						this.state.countdownName = 'skip'
+						runTimer(el, 3, () => {
+							this.state.countdownName = ''
+						},() => {
+							this.state.tasks[7].skipped = false
+							this.state.countdownName = ''
+						})
 					}
 				}
 			}
 		}
 	},
 	ready() {
+		this.params.screens = createScreenSlider(this.els.screens)
 		const { statuses, folders } = ui.filters
 		createDropDown({
 			element: this.els.statuses,
@@ -130,7 +181,12 @@ const app = prototy({
 			id: statuses.id,
 			items: statuses.items,
 			actions: statuses.actions,
-			onchange: (v) => this.state.filters.status = v
+			onchange: (v) => this.state.filters.status = v,
+			emit: (v) => {
+				if (v === 'Clear Removed') {
+					window.eventBus.emit('dialog:open', { type: 'Clear Removed', action: () => {} })
+				}
+			}
 		})
 		createDropDown({
 			element: this.els.folders,
@@ -139,11 +195,37 @@ const app = prototy({
 			items:[...folders.items, { icon: 'folder', text: 'My Folder' }], // если попок больше одной Any Folder
 			actions: folders.actions,
 			// onchange: (v) => this.state.filters.status = v
+			emit: (v) => {
+				if (v === 'Configure') {
+					this.params.screens.goTo(1)
+				}
+			}
 		})
-		// createCalendar({
-		// 	element: this.els.sheetContent,
-		// 	// onchange,
-		// 	// emit = () => {}
-		// })
+		createCalendar({
+			element: this.els.sheetContent,
+			// onchange,
+			// emit = () => {}
+		})
+		createCategories({
+			element: this.els.categoriesSection,
+			onclose: () => this.params.screens.goToMain()
+			// onchange,
+		})
+		const unsub = window.eventBus.on('dialog:open', ({ type, action, action2 }) => {
+			this.state.dialog.text = ui.dialog[type].text
+			this.state.dialog.actionName = ui.dialog[type].actionName
+			this.state.dialog.actionName2 = ui.dialog[type].actionName2
+			this.state.dialog.action = () => {
+				action()
+				dialogElement.close()
+			}
+			if (action2) {
+				this.state.dialog.action2 = () => {
+					action2()
+					dialogElement.close()
+				}
+			}
+			dialogElement.showModal()
+		})
 	}
 })

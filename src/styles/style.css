@@ -1,14 +1,16 @@
-html {
-    /*scroll-snap-type: y mandatory;*/
-    /*scroll-behavior: smooth;*/
-    /*scroll-padding-bottom: 80px;*/
+section[name="main"] {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    overflow-y: scroll;
 }
 
-.app {
-    width: 100%;
+.main-wrapper {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    main {
+        flex: 1;
+    }
 }
 
 header {
@@ -194,18 +196,11 @@ header {
         border-radius: var(--spacing-m);
     }
 
-    .card.done .title p {
-        color: var(--color-text-title);
-    }
-    .card.pin {
-        background-color: var(--color-bg-app);
-
-    }
-
     .actions {
         display: flex;
         align-items: center;
         padding: 0 var(--spacing-s);
+        gap: var(--spacing-xs);
     }
 
     .actions-left {
@@ -257,8 +252,23 @@ header {
     .pin sprite-icon:before {
         background-color: var(--color-blue);
     }
-    .remove sprite-icon:before {
+    .remove sprite-icon:before, .delete sprite-icon:before {
         background-color: var(--color-red);
+    }
+    .remove {
+        --color-btn: var(--color-red);
+    }
+    .skip {
+        --color-btn: var(--color-pink);
+    }
+    .skip sprite-icon:before {
+        background-color: var(--color-pink);
+    }
+    .keep {
+        --color-btn: var(--color-turquoise);
+    }
+    .keep sprite-icon:before {
+        background-color: var(--color-turquoise);
     }
 
     .data {
@@ -297,6 +307,12 @@ header {
         sprite-icon[name="remove"] {
             color: var(--color-red);
         }
+        sprite-icon[name="lock"] {
+            color: var(--color-turquoise);
+        }
+    }
+    .frequency {
+
     }
 
     .category {
@@ -308,17 +324,20 @@ header {
         font-weight: 200;
         letter-spacing: .02em;
     }
-
-    .date {
+    .date-wrapper {
+        display: flex;
+        gap: var(--spacing-m);
         font-size: var(--font-size-small);
         color: var(--color-text-second);
+        text-transform: capitalize;
     }
 }
 .current-task {
-    position: fixed;
-    left: 50%;
+    position: sticky;
+    margin: 0 auto;
     width: max-content;
-    transform: translateX(-50%);
+    transform: translateY(-100%);
+    bottom: 60px;
     display: flex;
     background-color: #ffffff50;
     color: var(--pc-bg-color);
@@ -339,16 +358,15 @@ header {
     font-weight: 300;
     font-style: italic;
     letter-spacing: .05em;
-    padding-bottom: 80px;
+    padding-bottom: 60px;
     text-align: right;
 }
 
 nav.bottom-bar {
     z-index: 10;
-    position: fixed;
+    position: sticky;
     bottom: var(--spacing-l);
-    left: 50%;
-    transform: translateX(-50%);
+    margin: 0 auto;
     background-color: var(--color-bg-glasses);
     backdrop-filter: var(--blure);
     width: 200px;
@@ -455,8 +473,6 @@ nav.bottom-bar {
         display: flex;
     }
 }
-
-
 
 /*main .swipe-wrapper:last-child .actions-left {*/
 /*    display: flex;*/
