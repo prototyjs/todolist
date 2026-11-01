@@ -38,6 +38,24 @@ export default class Service {
 			console.error('Error saving:', error)
 		}
 	}
+	renameFolder(folderId, name) {
+		const folder = this.data.find(f => f.id === folderId)
+		if (!folder) {
+			throw new Error(`Folder not found`)
+		}
+		folder.title = name
+		this.save()
+		return folder
+	}
+	renameCategory(categoryId, name) {
+		const category = this.categories.get(categoryId)
+		if (!category) {
+			throw new Error(`Category not found`)
+		}
+		category.title = name
+		this.save()
+		return category
+	}
 	addFolder(name) {
 		if (this.data.length >= this.maxFolder) {
 			throw new Error(`Maximum folder limit reached (${this.maxFolder})`)
@@ -51,7 +69,7 @@ export default class Service {
 
 		this.data.push(newFolder)
 		this.save()
-		return newFolder
+		return JSON.parse(JSON.stringify(newFolder))
 	}
 	addCategory(name, folderId) {
 		const folder = this.data.find(f => f.id === folderId)
@@ -71,7 +89,7 @@ export default class Service {
 
 		folder.categories.push(newCategory)
 		this.save()
-		return newCategory
+		return JSON.parse(JSON.stringify(newCategory))
 	}
 	deleteFolder(folderId) {
 		const index = this.data.findIndex(folder => folder.id === folderId)
@@ -80,6 +98,9 @@ export default class Service {
 		}
 		if (index === 0) {
 			throw new Error(`System folder`)
+		}
+		if (this.data[index].categories.length > 0) {
+			throw new Error(`Cannot delete folder: it contains categories`)
 		}
 		this.data.splice(index, 1)
 		this.save()
@@ -103,8 +124,26 @@ export default class Service {
 		this.save()
 		return { success: true }
 	}
+	incrementCategoryCount(categoryId, value = 1) {
+		const category = this.categories.get(categoryId)
+		if (!category) {
+			throw new Error(`Category not found`)
+		}
+		category.count += value
+		this.save()
+		return category
+	}
+	decrementCategoryCount(categoryId, value = 1) {
+		const category = this.categories.get(categoryId)
+		if (!category) {
+			throw new Error(`Category not found`)
+		}
+		category.count = Math.max(0, category.count - value)
+		this.save()
+		return category
+	}
 	getAll() {
-		return this.data
+		return JSON.parse(JSON.stringify(this.data))
 	}
 	getTitle(categoryId) {
 		return this.categories.get(categoryId)?.title || 'unknown'

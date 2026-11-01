@@ -6,7 +6,7 @@
             </button>
         </li>
         <li>
-            <button :onclick="move()" :disabled="item?.count === 0" :hidden="typeof item?.count !== 'number'">
+            <button :onclick="isMoving = true" :disabled="item?.count === 0" :hidden="typeof item?.count !== 'number'">
                 <sprite-icon name="move"></sprite-icon><span>Move Tasks</span>
             </button>
         </li>
@@ -20,7 +20,7 @@
 </template>
 
 <template component="field">
-    <div class="title" :text="item.text" :display="!isCurrentRenaming(item.id)"></div>
+    <div class="title" :text="item.title" :display="!isCurrentRenaming(item.id)"></div>
     <div class="wrapper-field outline" display-else>
         <input type="text" :onblur="save(item, event)" maxlength="20" :class="{ active: isCurrentRenaming(item.id) }">
         <div class="cancel-rename"  :onpointerdown.prevent.stop="el.previousElementSibling.value = ''"><sprite-icon name="destroy"></sprite-icon></div>

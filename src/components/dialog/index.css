@@ -58,7 +58,7 @@ dialog {
     .buttons:has(.secondary:not([hidden])) {
         flex-direction: column;
         width: min-content;
-        gap: var(--spacing-m);
+        gap: var(--spacing-l);
         button {
             width: auto;
         }

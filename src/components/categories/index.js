@@ -3,7 +3,12 @@ import { api } from '../../utils/api.js'
 import './index.css'
 import template from './index.html?raw'
 
-export function createCategories({ element, onclose, emit = () => {} }) {
+export async function createCategories({ element, onclose, emit = () => {} }) {
+	const data = api.categories.getAll()
+	for (const folder of data) {
+		folder.categories.push({ title: 'Add new category', role: 'addCategory' })
+	}
+	data.push({ title: 'Add new folder', role: 'addFolder' })
 	const app = prototy({
 		root: element,
 		state: {
@@ -13,17 +18,7 @@ export function createCategories({ element, onclose, emit = () => {} }) {
 			targetCategory: null,
 			activeId: null,
 			activeItem: null,
-			folders: [{
-				id: 'inbox',
-				icon: 'inbox',
-				text: 'Inbox',
-				categories: [{ id: 'general', text: 'General', count: 33 }, { id: '11', text: 'Банананы', count: 0 }, { text: 'Add new category', role: 'addCategory' }],
-			},{
-				id: '2',
-				text: 'Овощи',
-				categories: [{ id: '21', text: 'Томаты', count: 15 }, { id: '22', text: 'Огурцы', count: 2 }, { text: 'Add new category', role: 'addCategory' }],
-			},
-			{ text: 'Add new folder', role: 'addFolder' }],
+			folders: data,
 		},
 		params: {},
 		methods: {
@@ -37,7 +32,7 @@ export function createCategories({ element, onclose, emit = () => {} }) {
 				this.state.isRenaming = true
 				await nextTick()
 				const input = this.root.querySelector('input.active')
-				input.value = this.state.activeItem.text
+				input.value = this.state.activeItem.title
 				input.focus()
 				input.select()
 			},
@@ -45,7 +40,7 @@ export function createCategories({ element, onclose, emit = () => {} }) {
 				// event.preventDefault()
 				const v = event.target.value.trim()
 				if (v.length) {
-					item.text = event.target.value.trim()
+					item.title = event.target.value.trim()
 				}
 				this.state.activeItem = null
 				await nextTick()
@@ -57,11 +52,19 @@ export function createCategories({ element, onclose, emit = () => {} }) {
 			},
 			moveAndDelete() {
 				this.state.isDeleting = true
-				console.log(this.state.activeItem, this.state.targetCategory)
 				this.state.isMoving = true
 			},
 			deleteEmpty() {
 				console.log('deleteEmpty')
+				const id = this.state.targetCategory?.id || this.state.activeItem.id
+				api.categories.deleteCategory(id)
+				data.forEach(folder => {
+					if (!folder.categories) return
+					const categoryIndex = folder.categories.findIndex(category => category.id === id)
+					if (categoryIndex !== -1) {
+						folder.categories.splice(categoryIndex, 1)
+					}
+				})
 			},
 			close() {
 				onclose()
@@ -72,19 +75,24 @@ export function createCategories({ element, onclose, emit = () => {} }) {
 				this.state.isDeleting = false
 			},
 			move() {
-				this.state.targetCategory = this.state.activeItem
-				this.state.isMoving = true
+				// move tasks
+				this.state.isDeleting && this.methods.deleteEmpty()
+				this.state.isMoving = false
+				this.state.isDeleting = false
+				this.state.targetCategory = null
+				this.state.activeItem = null
 			},
 			addCategory(name, folder) {
 				console.log(name, folder)
-				// id = api.categories.add(folder, name)
-				const id = api.category.generateId()
-				folder.categories.splice(folder.categories.length - 1, 0, { id, text: name, count: 0 })
+				const category = api.categories.addCategory(name, folder.id)
+				console.log(category)
+				folder.categories.splice(folder.categories.length - 1, 0, category)
 			},
 			addFolder(name) {
 				console.log(name)
-				const id = api.category.generateId()
-				this.state.folders.splice(this.state.folders.length - 1, 0, { id, text: name, categories: [{ icon: 'plus', text: 'Add new category', role: 'addCategory' }] })
+				const folder = api.categories.addFolder(name)
+				folder.categories.push({ icon: 'plus', title: 'Add new category', role: 'addCategory' })
+				this.state.folders.splice(this.state.folders.length - 1, 0, folder)
 			},
 			handleMenu(event, type, item, folder) {
 				if (item.role) {
