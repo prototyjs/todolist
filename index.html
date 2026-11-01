@@ -117,6 +117,14 @@
             <button class="active" :onclick="dialogElement.close()">Cancel</button>
         </div>
     </dialog>
+    <dialog id="dialogField">
+        <h4 :text="dialog.text"></h4>
+        <input type="text" class="outline" :bind.value.input.trim="dialog.input" maxlength="20" autofocus>
+        <div class="buttons">
+            <button class="outline" :onclick="dialogField.close()">Cancel</button>
+            <button class="active" :onclick="dialog.action()" :text="dialog.actionName" :disabled="!dialog.input"></button>
+        </div>
+    </dialog>
 </div>
 </body>
 </html>

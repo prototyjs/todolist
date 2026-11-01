@@ -5,7 +5,6 @@ class Service {
 		this.todos = this.load(this.storageKey)
 		this.pins = this.load(this.pinsKey)
 		this.maxPins = 1
-		this.autoCleaningTime = 30
 	}
 	load(key) {
 		try {
@@ -16,12 +15,7 @@ class Service {
 			return []
 		}
 	}
-	generateId() {
-		const array = new Uint8Array(8)
-		crypto.getRandomValues(array);
-		const bigIntValue = array.reduce((acc, byte) => (acc << 8n) + BigInt(byte), 0n)
-		return bigIntValue.toString(36)
-	}
+
 	save() {
 		try {
 			localStorage.setItem(this.storageKey, JSON.stringify(this.todos))

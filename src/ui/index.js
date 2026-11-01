@@ -35,10 +35,18 @@ export default {
 			text: 'Are you sure you want to permanently clear unkept tasks?',
 			actionName: 'Clear',
 		},
-		'deleteCategory': {
+		deleteCategory: {
 			text: 'This category contains tasks. What would you like to do?',
 			actionName: 'Delete entirely',
 			actionName2: 'Move & Delete',
+		},
+		addCategory: {
+			text: 'Category name',
+			actionName: 'Create'
+		},
+		addFolder: {
+			text: 'Folder name',
+			actionName: 'Create'
 		}
 	}
 }

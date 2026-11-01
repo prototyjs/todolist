@@ -1,84 +1,112 @@
-class Service {
-	constructor({ deleteTasksByCategoryId }) {
+import { generateId } from './generateId.js'
+
+export default class Service {
+	constructor() {
 		this.storageKey = 'rayDoCategories'
-		this.categories = this.load()
-		this.categoriesMap = new Map()
-		this.categories.forEach(category => this.categoriesMap.set(category.id, category))
+		this.data = this.load()
+		this.categories = new Map()
+		this.rebuildCategories()
+		this.generateId = generateId
 		this.maxFolder = 5
 		this.maxCategory = 5
-		this.deleteTasksByCategoryId = deleteTasksByCategoryId
+	}
+	rebuildCategories() {
+		this.categories.clear()
+		this.data.forEach(folder =>
+			folder.categories.forEach(category => this.categories.set(category.id, category))
+		)
 	}
 	load() {
+		const sample = [{ id: 'inbox', title: 'Inbox', categories: [{ id: 'general', title: 'General', count: 0 }] }]
 		try {
 			const data = localStorage.getItem(this.storageKey)
 			if (data) {
 				return JSON.parse(data)
 			} else {
-				const categories = []
-				for (let i = 0; i < this.maxFolder; i++) {
-					const folder = { id: '_' + i, title: '', order: 0, categories: [] }
-					for (let j = 0; j < this.maxCategory; j++) {
-						folder.categories.push({ id: '_' + i + j, title: '', order: 0 })
-					}
-					categories.push(folder)
-				}
-				categories[0].title = 'Main'
-				categories[0].order = -1
-				categories[0].categories[0].title = 'Inbox'
-				categories[0].categories[0].order = -1
-				return categories
+				return sample
 			}
 		} catch (error) {
 			console.error('Error loading categories:', error)
-			return []
+			return sample
 		}
 	}
 	save() {
 		try {
-			localStorage.setItem(this.storageKey, JSON.stringify(this.categories))
+			localStorage.setItem(this.storageKey, JSON.stringify(this.data))
+			this.rebuildCategories()
 		} catch (error) {
 			console.error('Error saving:', error)
 		}
 	}
-	deleteFolder(folderId, title) {
-		const index = this.categories.findIndex(item => item.id === folderId)
+	addFolder(name) {
+		if (this.data.length >= this.maxFolder) {
+			throw new Error(`Maximum folder limit reached (${this.maxFolder})`)
+		}
+
+		const newFolder = {
+			id: this.generateId(),
+			title: name,
+			categories: []
+		}
+
+		this.data.push(newFolder)
+		this.save()
+		return newFolder
+	}
+	addCategory(name, folderId) {
+		const folder = this.data.find(f => f.id === folderId)
+		if (!folder) {
+			throw new Error(`Folder visual not found`)
+		}
+
+		if (folder.categories.length >= this.maxCategory) {
+			throw new Error(`Maximum category limit reached (${this.maxCategory}) in this folder`)
+		}
+
+		const newCategory = {
+			id: this.generateId(),
+			title: name,
+			count: !folder.categories.length ? 0 : 5 // for testing
+		}
+
+		folder.categories.push(newCategory)
+		this.save()
+		return newCategory
+	}
+	deleteFolder(folderId) {
+		const index = this.data.findIndex(folder => folder.id === folderId)
 		if (index === -1) {
-			throw new Error(`Folder "${title}" not found`)
+			throw new Error(`Folder not found`)
 		}
 		if (index === 0) {
-			throw new Error(`${title} is system folder`)
+			throw new Error(`System folder`)
 		}
-		if (title !== this.categories[index].title) {
-			return { error: true }
-		}
-		const folder = this.categories[index]
-		folder.categories.forEach((category) => this.deleteTasksByCategoryId(category.id))
-		folder.title = ''
-		folder.order = 0
-		folder.categories = []
+		this.data.splice(index, 1)
 		this.save()
 		return { success: true }
 	}
-	deleteCategory(categoryId, title) {
-		const category = this.categoriesMap.get(categoryId)
+	deleteCategory(categoryId) {
+		const category = this.categories.get(categoryId)
 		if (!category) {
-			throw new Error(`Category "${title}" not found`)
+			throw new Error(`Category not found`)
 		}
-		if (category.id === '_00') {
-			throw new Error(`"${title}" is system category`)
+		if (category.id === 'general') {
+			throw new Error(`System category`)
 		}
-		if (title !== category.title) {
-			return { error: true, data: { title } }
+		for (const folder of this.data) {
+			const cIndex = folder.categories.findIndex(c => c.id === categoryId)
+			if (cIndex !== -1) {
+				folder.categories.splice(cIndex, 1)
+				break
+			}
 		}
-		category.title = ''
-		category.order = 0
 		this.save()
 		return { success: true }
 	}
 	getAll() {
-		return this.categories
+		return this.data
 	}
 	getTitle(categoryId) {
-		return this.categoriesMap.get(categoryId)?.title || 'unknown'
+		return this.categories.get(categoryId)?.title || 'unknown'
 	}
 }

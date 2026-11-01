@@ -44,6 +44,7 @@ const app = prototy({
 		tasks,
 		dialog: {
 			text: '',
+			input: '',
 			actionName: '',
 			action: () => {},
 			actionName2: '',
@@ -211,21 +212,22 @@ const app = prototy({
 			onclose: () => this.params.screens.goToMain()
 			// onchange,
 		})
-		const unsub = window.eventBus.on('dialog:open', ({ type, action, action2 }) => {
+		const unsub = window.eventBus.on('dialog:open', ({ type, action, action2, element = dialogElement }) => {
 			this.state.dialog.text = ui.dialog[type].text
 			this.state.dialog.actionName = ui.dialog[type].actionName
-			this.state.dialog.actionName2 = ui.dialog[type].actionName2
 			this.state.dialog.action = () => {
-				action()
-				dialogElement.close()
+				action(this.state.dialog.input)
+				this.state.dialog.input = ''
+				element.close()
 			}
 			if (action2) {
+				this.state.dialog.actionName2 = ui.dialog[type].actionName2
 				this.state.dialog.action2 = () => {
 					action2()
-					dialogElement.close()
+					element.close()
 				}
 			}
-			dialogElement.showModal()
+			element.showModal()
 		})
 	}
 })

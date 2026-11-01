@@ -16,6 +16,11 @@ dialog {
         line-height: 1.4;
 
     }
+    input {
+        padding: var(--spacing-s) var(--spacing-m);
+        margin-top: var(--spacing-l);
+        width: 100%;
+    }
     .buttons {
         width: 100%;
         display: flex;
@@ -38,6 +43,9 @@ dialog {
             background-color: var(--color-text);
             color: var(--pc-bg-color);
             opacity: 1;
+        }
+        button:disabled {
+            background-color: var(--color-gray-100);
         }
     }
     sprite-icon {

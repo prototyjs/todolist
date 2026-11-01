@@ -13,6 +13,7 @@ section {
     opacity: 1;
     transform: translateX(0);
     transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1), opacity .5s ease-out;
+    overflow-y: auto;
 
     &.active {
         transform: translateX(0);
@@ -49,6 +50,10 @@ section {
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-m);
+    position: sticky;
+    top: 0;
+    background-color: var(--pc-bg-color);
+    z-index: 1;
     h4 {
         font-size: var(--font-size-title);
         position: absolute;

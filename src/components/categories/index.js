@@ -1,4 +1,5 @@
 import { prototy, nextTick } from '@/prototy.js'
+import { api } from '../../utils/api.js'
 import './index.css'
 import template from './index.html?raw'
 
@@ -16,13 +17,13 @@ export function createCategories({ element, onclose, emit = () => {} }) {
 				id: 'inbox',
 				icon: 'inbox',
 				text: 'Inbox',
-				categories: [{ id: 'general', icon: 'general', text: 'General', count: 33 }, { id: '11', text: 'Банананы', count: 0 }, { icon: 'plus', text: 'Add new category' }],
+				categories: [{ id: 'general', text: 'General', count: 33 }, { id: '11', text: 'Банананы', count: 0 }, { text: 'Add new category', role: 'addCategory' }],
 			},{
 				id: '2',
 				text: 'Овощи',
-				categories: [{ id: '21', text: 'Томаты', count: 15 }, { id: '22', text: 'Огурцы', count: 2 }, { icon: 'plus', text: 'Add new category' }],
+				categories: [{ id: '21', text: 'Томаты', count: 15 }, { id: '22', text: 'Огурцы', count: 2 }, { text: 'Add new category', role: 'addCategory' }],
 			},
-			{ icon: 'plus', text: 'Add new folder' }],
+			{ text: 'Add new folder', role: 'addFolder' }],
 		},
 		params: {},
 		methods: {
@@ -74,7 +75,23 @@ export function createCategories({ element, onclose, emit = () => {} }) {
 				this.state.targetCategory = this.state.activeItem
 				this.state.isMoving = true
 			},
-			handleMenu(event, type, item) {
+			addCategory(name, folder) {
+				console.log(name, folder)
+				// id = api.categories.add(folder, name)
+				const id = api.category.generateId()
+				folder.categories.splice(folder.categories.length - 1, 0, { id, text: name, count: 0 })
+			},
+			addFolder(name) {
+				console.log(name)
+				const id = api.category.generateId()
+				this.state.folders.splice(this.state.folders.length - 1, 0, { id, text: name, categories: [{ icon: 'plus', text: 'Add new category', role: 'addCategory' }] })
+			},
+			handleMenu(event, type, item, folder) {
+				if (item.role) {
+					this.state.activeItem = null
+					eventBus.emit('dialog:open', { type: item.role, action: (name) => this.methods[item.role](name, folder), element: dialogField })
+					return
+				}
 				if (this.state.isRenaming) {
 					return
 				}
