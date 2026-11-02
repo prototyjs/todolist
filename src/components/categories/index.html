@@ -39,7 +39,7 @@
                 <div class="content">
                     <sprite-icon :name="folderIndex ? (!folder.id ? 'plus' : 'folder') : 'inbox'"></sprite-icon>
                     <div :component="components.field" :props="{ item: folder }"></div>
-                    <sprite-icon :name="!isMoving && folder.id === 'inbox' && 'lock'"></sprite-icon>
+                    <span class="count-folder" :text="`${folder.categories?.length - 1} of ${limit}`" :hidden="!folder.id"></span>
                 </div>
                 <div :component="!isRenaming && isCurrent(folder.id) && components.menu" class="actions" :props="{ item: folder }"></div>
             </div>

@@ -39,6 +39,11 @@ section[name="categories"] {
             border-radius: var(--spacing-l);
             overflow: hidden;
             margin-bottom: 4px;
+            .count-folder {
+                margin-left: auto;
+                margin-right: var(--spacing-s);
+                color: var(--color-gray);
+            }
         }
         .folder-item:first-child .folder {
             pointer-events: none;
