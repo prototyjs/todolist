@@ -19,7 +19,9 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 			current: null,
 			folders: data,
 		},
-		params: {},
+		params: {
+			limit: api.categories.limit
+		},
 		methods: {
 			isCurrentRenaming(id) {
 				return this.state.isRenaming && this.state.current?.id === id
@@ -99,7 +101,6 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 			addCategory(name, folder) {
 				console.log(name, folder)
 				const category = api.categories.addCategory(name, folder.id)
-				console.log(category)
 				folder.categories.splice(folder.categories.length - 1, 0, category)
 			},
 			addFolder(name) {

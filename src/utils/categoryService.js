@@ -7,8 +7,7 @@ export default class Service {
 		this.categories = new Map()
 		this.rebuildCategories()
 		this.generateId = generateId
-		this.maxFolder = 5
-		this.maxCategory = 5
+		this.limit = 5
 	}
 	rebuildCategories() {
 		this.categories.clear()
@@ -68,8 +67,8 @@ export default class Service {
 		return toCategory
 	}
 	addFolder(name) {
-		if (this.data.length >= this.maxFolder) {
-			throw new Error(`Maximum folder limit reached (${this.maxFolder})`)
+		if (this.data.length >= this.limit) {
+			throw new Error(`Maximum folder limit reached (${this.limit})`)
 		}
 
 		const newFolder = {
@@ -88,8 +87,8 @@ export default class Service {
 			throw new Error(`Folder visual not found`)
 		}
 
-		if (folder.categories.length >= this.maxCategory) {
-			throw new Error(`Maximum category limit reached (${this.maxCategory}) in this folder`)
+		if (folder.categories.length >= this.limit) {
+			throw new Error(`Maximum category limit reached (${this.limit}) in this folder`)
 		}
 
 		const newCategory = {

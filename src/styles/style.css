@@ -15,20 +15,14 @@ section[name="main"] {
 
 header {
     height: 98px;
-    background-color: var(--pc-bg-color);
+    background: linear-gradient(180deg, var(--pc-bg-color) 80%, transparent 100%);
+    backdrop-filter: var(--blure);
     position: sticky;
     top: 0;
     z-index: 2;
     .header-wrapper {
         overflow: hidden;
         position: relative;
-        &:after {
-            position: absolute;
-            content: '';
-            width: 100%;
-            bottom: 0;
-            border-bottom: 1px solid var(--color-border);
-        }
     }
     .top-bar {
         display: flex;

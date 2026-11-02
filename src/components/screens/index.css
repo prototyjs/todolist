@@ -46,13 +46,14 @@ section {
     }
 }
 .screen-top-bar {
+    background: linear-gradient(180deg, var(--pc-bg-color) 60%, transparent 100%);
+    backdrop-filter: blur(2px);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-m);
     position: sticky;
     top: 0;
-    background-color: var(--pc-bg-color);
     z-index: 1;
     h4 {
         font-size: var(--font-size-title);

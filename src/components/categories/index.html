@@ -34,10 +34,10 @@
 </div>
 <div class="content" :class="{ moving: isMoving, renaming: isRenaming }">
     <ul :each="folders" class="folders" scope="folder">
-        <li class="folder-item">
+        <li class="folder-item" :hidden="!folder.id && folders.length > limit">
             <div class="folder" :onclick="handleMenu(event, 'folder', folder)" :class="{ outline: isCurrent(folder.id) }">
                 <div class="content">
-                    <sprite-icon :name="folderIndex ? (folderIndex === folders.length-1 ? 'plus' : 'folder') : 'inbox'"></sprite-icon>
+                    <sprite-icon :name="folderIndex ? (!folder.id ? 'plus' : 'folder') : 'inbox'"></sprite-icon>
                     <div :component="components.field" :props="{ item: folder }"></div>
                     <sprite-icon :name="!isMoving && folder.id === 'inbox' && 'lock'"></sprite-icon>
                 </div>
@@ -45,9 +45,10 @@
             </div>
             <ul :each="folder.categories" class="categories" scope="category">
                 <li class="category-item" :onclick="handleMenu(event, 'category', category, folder)"
-                    :class="{ outline: isCurrent(category.id), self: isMoving && target && (category.id == target?.id) }">
+                    :class="{ outline: isCurrent(category.id), self: isMoving && target && (category.id == target?.id) }"
+                    :hidden="!category.id && folder?.categories.length > limit">
                     <div class="content">
-                        <sprite-icon :name="!categoryIndex && !folderIndex ? 'general' : categoryIndex === folder?.categories.length-1 ? 'plus' : 'category' "></sprite-icon>
+                        <sprite-icon :name="!categoryIndex && !folderIndex ? 'general' : !category.id ? 'plus' : 'category' "></sprite-icon>
                         <div :component="components.field" :props="{ item: category }"></div>
                         <div class="wrapper-count">
                             <span :text="category.count" :hidden="typeof category.count !== 'number'"></span>
