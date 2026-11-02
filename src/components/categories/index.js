@@ -15,48 +15,65 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 			isMoving: false,
 			isRenaming: false,
 			isDeleting: false,
-			targetCategory: null,
-			activeId: null,
-			activeItem: null,
+			target: null,
+			current: null,
 			folders: data,
 		},
 		params: {},
 		methods: {
 			isCurrentRenaming(id) {
-				return this.state.isRenaming && this.state.activeItem?.id === id
+				return this.state.isRenaming && this.state.current?.id === id
 			},
 			isCurrent(id) {
-				return this.state.activeItem?.id && (this.state.activeItem.id === id)
+				return this.state.current?.id && (this.state.current.id === id)
 			},
 			async rename() {
 				this.state.isRenaming = true
 				await nextTick()
 				const input = this.root.querySelector('input.active')
-				input.value = this.state.activeItem.title
+				input.value = this.state.current.title
 				input.focus()
 				input.select()
 			},
-			async save(item, event) {
-				// event.preventDefault()
-				const v = event.target.value.trim()
-				if (v.length) {
-					item.title = event.target.value.trim()
-				}
-				this.state.activeItem = null
-				await nextTick()
-				this.state.isRenaming = false
-			},
 			remove() {
-				this.state.targetCategory = this.state.activeItem
-				eventBus.emit('dialog:open', { type: 'deleteCategory', action: this.methods.deleteEmpty.bind(this), action2: this.methods.moveAndDelete.bind(this) })
+				if (this.state.current.categories?.length === 1) {
+					const res = api.categories.deleteFolder(this.state.current.id)
+					if (res.success) {
+						const index = this.state.folders.findIndex(folder => folder.id === this.state.current.id)
+						this.state.folders.splice(index, 1)
+					}
+					return
+				}
+				if (!this.state.current.categories && !this.state.current.count) {
+					this.methods.removeCategory()
+					return
+				}
+				this.state.target = this.state.current
+				eventBus.emit('dialog:open', {
+					type: 'deleteCategory',
+					action: this.methods.removeCategory.bind(this),
+					action2: this.methods.moveAndDelete.bind(this)
+				})
 			},
 			moveAndDelete() {
 				this.state.isDeleting = true
 				this.state.isMoving = true
 			},
-			deleteEmpty() {
-				console.log('deleteEmpty')
-				const id = this.state.targetCategory?.id || this.state.activeItem.id
+			move() {
+				this.state.target = this.state.current
+				this.state.isMoving = true
+			},
+			renameCategory(item, event) {
+				const name = event.target.value.trim()
+				if (name.length) {
+					const res = api.categories[item.categories ? 'renameFolder' : 'renameCategory'](item.id, name)
+					res && (item.title = res.title)
+				}
+				this.state.current = null
+				nextTick().then(_=> this.state.isRenaming = false)
+			},
+			removeCategory() {
+				const id = this.state.target?.id || this.state.current.id
 				api.categories.deleteCategory(id)
 				data.forEach(folder => {
 					if (!folder.categories) return
@@ -66,21 +83,18 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 					}
 				})
 			},
-			close() {
-				onclose()
-			},
-			cancel() {
-				this.state.activeItem = this.state.targetCategory
+			moveCategory() {
+				const res = api.categories.mergeCategories(this.state.target.id, this.state.current.id)
+				if (!res) {
+					return
+				}
+				this.state.current.count = res.count
+				this.state.target.count = 0
+				this.state.isDeleting && this.methods.removeCategory()
 				this.state.isMoving = false
 				this.state.isDeleting = false
-			},
-			move() {
-				// move tasks
-				this.state.isDeleting && this.methods.deleteEmpty()
-				this.state.isMoving = false
-				this.state.isDeleting = false
-				this.state.targetCategory = null
-				this.state.activeItem = null
+				this.state.target = null
+				this.state.current = null
 			},
 			addCategory(name, folder) {
 				console.log(name, folder)
@@ -95,22 +109,30 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 				this.state.folders.splice(this.state.folders.length - 1, 0, folder)
 			},
 			handleMenu(event, type, item, folder) {
-				if (item.role) {
-					this.state.activeItem = null
-					eventBus.emit('dialog:open', { type: item.role, action: (name) => this.methods[item.role](name, folder), element: dialogField })
-					return
-				}
 				if (this.state.isRenaming) {
 					return
 				}
-				if (this.state.activeItem?.id === item.id) {
-					this.state.activeItem = null
+				if (item.role) {
+					this.state.current = null
+					eventBus.emit('dialog:open', { type: item.role, action: (name) => this.methods[item.role](name, folder), element: dialogField })
+					return
+				}
+				if (this.state.current?.id === item.id) {
+					this.state.current = null
 					return
 				}
 				if (this.state.isMoving && type === 'folder') {
 					return
 				}
-				this.state.activeItem = item
+				this.state.current = item
+			},
+			close() {
+				onclose()
+			},
+			cancel() {
+				this.state.current = this.state.target
+				this.state.isMoving = false
+				this.state.isDeleting = false
 			},
 			emit
 		},

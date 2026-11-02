@@ -6,13 +6,13 @@
             </button>
         </li>
         <li>
-            <button :onclick="isMoving = true" :disabled="item?.count === 0" :hidden="typeof item?.count !== 'number'">
+            <button :onclick="move()" :disabled="item?.count === 0 || item.id === 'general'" :hidden="typeof item?.count !== 'number'">
                 <sprite-icon name="move"></sprite-icon><span>Move Tasks</span>
             </button>
         </li>
         <li :hidden="item?.id === 'general'" class="dangerous">
-            <button :onclick="item.count ? remove() : deleteEmpty()"
-                    :disabled="item?.categories?.length > 0">
+            <button :onclick="remove()"
+                    :disabled="item?.categories?.length > 1">
                 <sprite-icon name="remove"></sprite-icon><span :text="item?.categories ? 'Remove empty' : 'Remove'">Remove</span>
             </button>
         </li>
@@ -22,7 +22,7 @@
 <template component="field">
     <div class="title" :text="item.title" :display="!isCurrentRenaming(item.id)"></div>
     <div class="wrapper-field outline" display-else>
-        <input type="text" :onblur="save(item, event)" maxlength="20" :class="{ active: isCurrentRenaming(item.id) }">
+        <input type="text" :onblur="renameCategory(item, event)" maxlength="20" :class="{ active: isCurrentRenaming(item.id) }">
         <div class="cancel-rename"  :onpointerdown.prevent.stop="el.previousElementSibling.value = ''"><sprite-icon name="destroy"></sprite-icon></div>
     </div>
 </template>
@@ -30,7 +30,7 @@
 <div class="screen-top-bar">
     <button class="outline" :onclick="isMoving ? cancel() : close()" :text="isMoving ? 'Cancel' : 'Close'"></button>
     <h4><sprite-icon name="catalog"></sprite-icon>Categories</h4>
-    <button class="outline" :onclick="move()" :hidden="!isMoving" :disabled="!activeItem">Move to…</button>
+    <button class="outline" :onclick="moveCategory()" :hidden="!isMoving" :disabled="!current">Move to…</button>
 </div>
 <div class="content" :class="{ moving: isMoving, renaming: isRenaming }">
     <ul :each="folders" class="folders" scope="folder">
@@ -45,15 +45,15 @@
             </div>
             <ul :each="folder.categories" class="categories" scope="category">
                 <li class="category-item" :onclick="handleMenu(event, 'category', category, folder)"
-                    :class="{ outline: isCurrent(category.id), self: isMoving && targetCategory && (category.id == targetCategory?.id) }">
+                    :class="{ outline: isCurrent(category.id), self: isMoving && target && (category.id == target?.id) }">
                     <div class="content">
                         <sprite-icon :name="!categoryIndex && !folderIndex ? 'general' : categoryIndex === folder?.categories.length-1 ? 'plus' : 'category' "></sprite-icon>
                         <div :component="components.field" :props="{ item: category }"></div>
                         <div class="wrapper-count">
                             <span :text="category.count" :hidden="typeof category.count !== 'number'"></span>
-                            <span :text="'+' + targetCategory?.count" :hidden="!isMoving || !isCurrent(category.id)" class="added"></span>
+                            <span :text="'+' + target?.count" :hidden="!isMoving || !isCurrent(category.id)" class="added"></span>
                         </div>
-                        <sprite-icon :name="category.id == targetCategory?.id ? (isDeleting && 'remove') : ((isDeleting || isMoving) && 'checked_line')"></sprite-icon>
+                        <sprite-icon :name="category.id == target?.id ? (isDeleting && 'remove') : ((isDeleting || isMoving) && 'checked_line')"></sprite-icon>
                     </div>
                     <div :component="!isRenaming && isCurrent(category.id) && components.menu" class="actions" :props="{ item:category }"></div>
                 </li>

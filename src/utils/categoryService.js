@@ -56,6 +56,17 @@ export default class Service {
 		this.save()
 		return category
 	}
+	mergeCategories(fromCategoryId, toCategoryId) {
+		const fromCategory = this.categories.get(fromCategoryId)
+		const toCategory = this.categories.get(toCategoryId)
+		if (!fromCategory || !toCategoryId) {
+			throw new Error(`Category not found`)
+		}
+		toCategory.count += fromCategory.count
+		// taskApi
+		this.save()
+		return toCategory
+	}
 	addFolder(name) {
 		if (this.data.length >= this.maxFolder) {
 			throw new Error(`Maximum folder limit reached (${this.maxFolder})`)
