@@ -1,5 +1,6 @@
 import { prototy, nextTick } from '@/prototy.js'
 import { api } from '../../utils/api.js'
+import { UI_MATRIX } from './uiMatrix.js'
 import './index.css'
 import template from './index.html?raw'
 
@@ -12,17 +13,49 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 	const app = prototy({
 		root: element,
 		state: {
+			currentId: null,
+			renamingId: null,
+			targetId: null,
 			isMoving: false,
-			isRenaming: false,
 			isDeleting: false,
-			target: null,
-			current: null,
 			folders: data,
 		},
 		params: {
 			limit: api.categories.limit
 		},
 		methods: {
+			getUI(item, prop) {
+				if (!item) return null
+
+				const type = ('categories' in item) ? 'folder' : 'category'
+				const id = item.id
+				let state = 'IDLE'
+
+				if (type === 'folder') {
+					if (id === 'inbox') state = 'INBOX'
+					else if (!id) state = 'NEW'
+					else if (this.state.renamingId === id) state = 'RENAMING'
+					else if (this.state.currentId === id) state = 'ACTIVE'
+					else if (this.state.isMoving) state = 'MOVING'
+				}
+				else if (type === 'category') {
+					if (id === 'general') state = 'GENERAL'
+					else if (!id) state = 'NEW'
+					else if (this.state.renamingId === id) state = 'RENAMING'
+					else if (this.state.targetId === id && this.state.isDeleting) state = 'DELETING'
+					else if (this.state.targetId === id && this.state.isMoving) state = 'MOVING'
+					else if (this.state.currentId === id) state = 'ACTIVE'
+				}
+
+				if (prop === 'actionIcon' && (state === 'MOVING' || state === 'DELETING')) {
+					if (id === this.state.target?.id) {
+						return this.state.isDeleting ? 'remove' : 'checked_line'
+					}
+					return 'checked_line'
+				}
+
+				return UI_MATRIX[type][state]?.[prop] ?? null
+			},
 			isCurrentRenaming(id) {
 				return this.state.isRenaming && this.state.current?.id === id
 			},
@@ -114,24 +147,24 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 					return
 				}
 				if (item.role) {
-					this.state.current = null
+					this.state.currentId = null
 					eventBus.emit('dialog:open', { type: item.role, action: (name) => this.methods[item.role](name, folder), element: dialogField })
 					return
 				}
-				if (this.state.current?.id === item.id) {
-					this.state.current = null
+				if (this.state.currentId === item.id) {
+					this.state.currentId = null
 					return
 				}
 				if (this.state.isMoving && type === 'folder') {
 					return
 				}
-				this.state.current = item
+				this.state.currentId = item.id
 			},
 			close() {
 				onclose()
 			},
 			cancel() {
-				this.state.current = this.state.target
+				this.state.currentId = this.state.targetId
 				this.state.isMoving = false
 				this.state.isDeleting = false
 			},
