@@ -1,19 +1,15 @@
 export const UI_MATRIX = {
 	folder: {
-		INBOX:    { icon: 'inbox',   hasCount: true,  hasMenu: false },
-		NEW:      { icon: 'plus',    hasCount: false, hasMenu: false },
-		IDLE:     { icon: 'folder',  hasCount: true,  hasMenu: false },
-		ACTIVE:   { icon: 'folder',  hasCount: true,  hasMenu: true  },
-		RENAMING: { icon: 'folder',  hasCount: false, hasMenu: false },
-		MOVING:   { icon: 'folder',  hasCount: true,  hasMenu: false }
+		INBOX:    { icon: 'inbox',   hasCount: true },
+		NEW:      { icon: 'plus',    hasCount: false },
+		IDLE:     { icon: 'folder',  hasCount: true },
+		RENAMING: { icon: 'folder',  hasCount: false },
+		MOVING:   { icon: 'folder',  hasCount: true }
 	},
 	category: {
-		GENERAL:  { icon: 'general',  hasCount: true,  hasMenu: false, actionIcon: null },
-		NEW:      { icon: 'plus',     hasCount: false, hasMenu: false, actionIcon: null },
-		IDLE:     { icon: 'category', hasCount: true,  hasMenu: false, actionIcon: null },
-		ACTIVE:   { icon: 'category', hasCount: true,  hasMenu: true,  actionIcon: null },
-		RENAMING: { icon: 'category', hasCount: false, hasMenu: false, actionIcon: null },
-		MOVING:   { icon: 'category', hasCount: true,  hasMenu: false, actionIcon: 'checked_line' },
-		DELETING: { icon: 'category', hasCount: true,  hasMenu: false, actionIcon: 'checked_line' }
+		GENERAL:  { icon: 'general',  hasCount: true },
+		NEW:      { icon: 'plus',     hasCount: false },
+		IDLE:     { icon: 'category', hasCount: true },
+		RENAMING: { icon: 'category', hasCount: false }
 	}
 }

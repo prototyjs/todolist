@@ -112,8 +112,8 @@
         <sprite-icon name="warn2"></sprite-icon>
         <h4 :text="dialog.text"></h4>
         <div class="buttons">
-            <button class="outline" :onclick="dialog.action()" :text="dialog.actionName"></button>
             <button class="secondary" :onclick="dialog.action2()" :text="dialog.actionName2" :hidden="!dialog.actionName2"></button>
+            <button class="outline" :onclick="dialog.action()" :text="dialog.actionName"></button>
             <button class="active" :onclick="dialogElement.close()">Cancel</button>
         </div>
     </dialog>

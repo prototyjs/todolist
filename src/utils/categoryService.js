@@ -62,6 +62,7 @@ export default class Service {
 			throw new Error(`Category not found`)
 		}
 		toCategory.count += fromCategory.count
+		fromCategory.count = 0
 		// taskApi
 		this.save()
 		return toCategory

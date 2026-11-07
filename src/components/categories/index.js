@@ -13,15 +13,16 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 	const app = prototy({
 		root: element,
 		state: {
-			currentId: null,
-			renamingId: null,
-			targetId: null,
+			current: null,
+			target: null,
 			isMoving: false,
 			isDeleting: false,
+			isRenaming: false,
 			folders: data,
 		},
 		params: {
-			limit: api.categories.limit
+			limit: api.categories.limit,
+			input: { target: null }
 		},
 		methods: {
 			getUI(item, prop) {
@@ -34,56 +35,51 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 				if (type === 'folder') {
 					if (id === 'inbox') state = 'INBOX'
 					else if (!id) state = 'NEW'
-					else if (this.state.renamingId === id) state = 'RENAMING'
-					else if (this.state.currentId === id) state = 'ACTIVE'
-					else if (this.state.isMoving) state = 'MOVING'
+					else if (this.state.current === item && this.state.isRenaming) state = 'RENAMING'
 				}
 				else if (type === 'category') {
 					if (id === 'general') state = 'GENERAL'
 					else if (!id) state = 'NEW'
-					else if (this.state.renamingId === id) state = 'RENAMING'
-					else if (this.state.targetId === id && this.state.isDeleting) state = 'DELETING'
-					else if (this.state.targetId === id && this.state.isMoving) state = 'MOVING'
-					else if (this.state.currentId === id) state = 'ACTIVE'
-				}
-
-				if (prop === 'actionIcon' && (state === 'MOVING' || state === 'DELETING')) {
-					if (id === this.state.target?.id) {
-						return this.state.isDeleting ? 'remove' : 'checked_line'
-					}
-					return 'checked_line'
+					else if (this.state.current === item && this.state.isRenaming) state = 'RENAMING'
 				}
 
 				return UI_MATRIX[type][state]?.[prop] ?? null
 			},
-			isCurrentRenaming(id) {
-				return this.state.isRenaming && this.state.current?.id === id
+			actionIcon(item) {
+				if (item.id !== this.state.target?.id) {
+					return (this.state.isDeleting || this.state.isMoving) ? 'checked_line' : null
+				}
+				return this.state.isDeleting ? 'remove' : null
 			},
 			isCurrent(id) {
-				return this.state.current?.id && (this.state.current.id === id)
+				if (!id) return false
+				return this.state.current?.id === id
 			},
 			async rename() {
 				this.state.isRenaming = true
 				await nextTick()
-				const input = this.root.querySelector('input.active')
+				const input = this.params.input.target
 				input.value = this.state.current.title
 				input.focus()
 				input.select()
 			},
 			remove() {
+				const current = this.state.current;
+				if (!current) return
 				if (this.state.current.categories?.length === 1) {
-					const res = api.categories.deleteFolder(this.state.current.id)
+					const res = api.categories.deleteFolder(current.id)
 					if (res.success) {
-						const index = this.state.folders.findIndex(folder => folder.id === this.state.current.id)
+						const index = this.state.folders.findIndex(folder => folder.id === current.id)
 						this.state.folders.splice(index, 1)
 					}
+					this.state.current = null
 					return
 				}
-				if (!this.state.current.categories && !this.state.current.count) {
+				if (!current.categories && !current.count) {
 					this.methods.removeCategory()
 					return
 				}
-				this.state.target = this.state.current
+				this.state.target = current
 				eventBus.emit('dialog:open', {
 					type: 'deleteCategory',
 					action: this.methods.removeCategory.bind(this),
@@ -93,10 +89,12 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 			moveAndDelete() {
 				this.state.isDeleting = true
 				this.state.isMoving = true
+				this.state.current = null
 			},
 			move() {
 				this.state.target = this.state.current
 				this.state.isMoving = true
+				this.state.current = null
 			},
 			renameCategory(item, event) {
 				const name = event.target.value.trim()
@@ -105,27 +103,37 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 					res && (item.title = res.title)
 				}
 				this.state.current = null
-				nextTick().then(_=> this.state.isRenaming = false)
+				nextTick().then(() => this.state.isRenaming = false)
 			},
 			removeCategory() {
-				const id = this.state.target?.id || this.state.current.id
-				api.categories.deleteCategory(id)
+				const itemToRemove = this.state.target || this.state.current;
+				if (!itemToRemove) return
+				api.categories.deleteCategory(itemToRemove.id)
 				data.forEach(folder => {
 					if (!folder.categories) return
-					const categoryIndex = folder.categories.findIndex(category => category.id === id)
+					const categoryIndex = folder.categories.findIndex(category => category.id === itemToRemove.id)
 					if (categoryIndex !== -1) {
 						folder.categories.splice(categoryIndex, 1)
 					}
 				})
+				this.state.target = null
+				this.state.current = null
 			},
 			moveCategory() {
-				const res = api.categories.mergeCategories(this.state.target.id, this.state.current.id)
+				const current = this.state.current
+				const target = this.state.target
+
+				if (!current || !target) return
+
+				const res = api.categories.mergeCategories(target.id, current.id)
 				if (!res) {
 					return
 				}
-				this.state.current.count = res.count
-				this.state.target.count = 0
-				this.state.isDeleting && this.methods.removeCategory()
+				current.count = res.count
+				target.count = 0
+				if (this.state.isDeleting) {
+					this.methods.removeCategory()
+				}
 				this.state.isMoving = false
 				this.state.isDeleting = false
 				this.state.target = null
@@ -147,26 +155,27 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 					return
 				}
 				if (item.role) {
-					this.state.currentId = null
+					this.state.current = null
 					eventBus.emit('dialog:open', { type: item.role, action: (name) => this.methods[item.role](name, folder), element: dialogField })
 					return
 				}
-				if (this.state.currentId === item.id) {
-					this.state.currentId = null
+				if (this.state.current?.id === item.id) {
+					this.state.current = null
 					return
 				}
 				if (this.state.isMoving && type === 'folder') {
 					return
 				}
-				this.state.currentId = item.id
+				this.state.current = item
 			},
 			close() {
 				onclose()
 			},
 			cancel() {
-				this.state.currentId = this.state.targetId
+				this.state.current = this.state.target
 				this.state.isMoving = false
 				this.state.isDeleting = false
+				this.state.target = null
 			},
 			emit
 		},

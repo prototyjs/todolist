@@ -37,8 +37,8 @@ export default {
 		},
 		deleteCategory: {
 			text: 'This category contains tasks. What would you like to do?',
-			actionName: 'Delete entirely',
-			actionName2: 'Move & Delete',
+			actionName: 'Delete Completely',
+			actionName2: 'Delete and Move'
 		},
 		addCategory: {
 			text: 'Category name',

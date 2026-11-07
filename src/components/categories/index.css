@@ -122,7 +122,7 @@ section[name="categories"] {
         align-items: center;
         input {
             padding: var(--spacing-xs) var(--spacing-m);
-            width: 26ch;
+            width: 185px;
         }
         .cancel-rename {
             height: 27px;
