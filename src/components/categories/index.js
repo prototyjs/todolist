@@ -111,14 +111,16 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 			removeCategory() {
 				const itemToRemove = this.state.target || this.state.current;
 				if (!itemToRemove) return
-				api.categories.deleteCategory(itemToRemove.id)
-				data.forEach(folder => {
-					if (!folder.categories) return
-					const categoryIndex = folder.categories.findIndex(category => category.id === itemToRemove.id)
-					if (categoryIndex !== -1) {
-						folder.categories.splice(categoryIndex, 1)
-					}
-				})
+				const res = api.categories.deleteCategory(itemToRemove.id)
+				if (res.success) {
+					data.forEach(folder => {
+						if (!folder.categories) return
+						const categoryIndex = folder.categories.findIndex(category => category.id === itemToRemove.id)
+						if (categoryIndex !== -1) {
+							folder.categories.splice(categoryIndex, 1)
+						}
+					})
+				}
 				this.state.target = null
 				this.state.current = null
 			},
