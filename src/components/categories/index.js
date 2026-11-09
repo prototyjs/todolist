@@ -64,9 +64,9 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 				input.select()
 			},
 			remove() {
-				const current = this.state.current;
+				const current = this.state.current
 				if (!current) return
-				if (this.state.current.categories?.length === 1) {
+				if (current.categories?.length === 1) {
 					const res = api.categories.deleteFolder(current.id)
 					if (res.success) {
 						const index = this.state.folders.findIndex(folder => folder.id === current.id)
@@ -83,7 +83,10 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 				eventBus.emit('dialog:open', {
 					type: 'deleteCategory',
 					action: this.methods.removeCategory.bind(this),
-					action2: this.methods.moveAndDelete.bind(this)
+					action2: this.methods.moveAndDelete.bind(this),
+					cancel: () => {
+						this.state.target = null
+					}
 				})
 			},
 			moveAndDelete() {

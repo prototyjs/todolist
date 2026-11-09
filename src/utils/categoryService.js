@@ -38,6 +38,9 @@ export default class Service {
 		}
 	}
 	renameFolder(folderId, name) {
+		if (folderId === 'inbox') {
+			throw new Error(`System folder`)
+		}
 		const folder = this.data.find(f => f.id === folderId)
 		if (!folder) {
 			throw new Error(`Folder not found`)
@@ -47,6 +50,9 @@ export default class Service {
 		return folder
 	}
 	renameCategory(categoryId, name) {
+		if (categoryId === 'general') {
+			throw new Error(`System category`)
+		}
 		const category = this.categories.get(categoryId)
 		if (!category) {
 			throw new Error(`Category not found`)

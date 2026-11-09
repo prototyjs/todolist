@@ -71,8 +71,9 @@ const app = prototy({
 			}
 			return icons[Object.keys(icons).find(key => item[key])]
 		},
-		dialogOpen(type, action) {
-
+		dialogClear() {
+			this.els.dialogInput.value = ''
+			dialogField.close()
 		},
 		viewTask() {
 			this.params.screens.goTo(3)
@@ -212,7 +213,7 @@ const app = prototy({
 			onclose: () => this.params.screens.goToMain()
 			// onchange,
 		})
-		const unsub = window.eventBus.on('dialog:open', ({ type, action, action2, element = dialogElement }) => {
+		const unsub = window.eventBus.on('dialog:open', ({ type, action, action2, cancel, element = dialogElement }) => {
 			this.state.dialog.text = ui.dialog[type].text
 			this.state.dialog.actionName = ui.dialog[type].actionName
 			this.state.dialog.action = () => {
@@ -220,6 +221,12 @@ const app = prototy({
 				this.state.dialog.input = ''
 				element.close()
 			}
+			this.state.dialog.cancel = () => {
+				this.state.dialog.input = ''
+				cancel?.()
+				element.close()
+			}
+
 			if (action2) {
 				this.state.dialog.actionName2 = ui.dialog[type].actionName2
 				this.state.dialog.action2 = () => {
