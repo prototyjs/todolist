@@ -1,17 +1,17 @@
 <template component="menu">
     <ul :hidden="item?.id === 'inbox'">
         <li :hidden="item?.id === 'general'">
-            <button :onclick="rename()">
+            <button :onclick="rename()" cy="menu-rename">
                 <sprite-icon name="rename"></sprite-icon><span>Rename</span>
             </button>
         </li>
         <li>
-            <button :onclick.stop="move()" :disabled="item?.count === 0" :hidden="typeof item?.count !== 'number'">
+            <button :onclick.stop="move()" :disabled="item?.count === 0" :hidden="typeof item?.count !== 'number'" cy="menu-move">
                 <sprite-icon name="move"></sprite-icon><span>Move Tasks</span>
             </button>
         </li>
         <li :hidden="item?.id === 'general'" class="dangerous">
-            <button :onclick="remove()"
+            <button :onclick="remove()" cy="menu-remove"
                     :disabled="item?.categories?.length > 1">
                 <sprite-icon name="remove"></sprite-icon><span :text="item?.categories ? 'Remove empty' : 'Remove'">Remove</span>
             </button>
@@ -22,13 +22,13 @@
 <template component="field">
     <div class="title" :text="item.title" :display="!(isCurrent(item.id) && isRenaming)"></div>
     <div class="wrapper-field outline" display-else>
-        <input type="text" :onblur="renameCategory(item, event)" maxlength="20" class="active" :el="input.target = isCurrent(item.id) && isRenaming && el">
-        <div class="cancel-rename"  :onpointerdown.prevent.stop="input.target.value = ''"><sprite-icon name="destroy"></sprite-icon></div>
+        <input type="text" :onblur="renameCategory(item, event)" maxlength="20" class="active" :el="input.target = isCurrent(item.id) && isRenaming && el" cy="rename-input">
+        <div class="cancel-rename"  :onpointerdown.prevent.stop="input.target.value = ''"><sprite-icon name="destroy" cy="rename-cancel"></sprite-icon></div>
     </div>
 </template>
 
 <div class="screen-top-bar">
-    <button class="outline" :onclick="isMoving ? cancel() : close()" :text="isMoving ? 'Cancel' : 'Close'"></button>
+    <button class="outline" :onclick="isMoving ? cancel() : close()" :text="isMoving ? 'Cancel' : 'Close'" cy="close"></button>
     <h4><sprite-icon name="catalog"></sprite-icon>Categories</h4>
     <button class="outline" :onclick="moveCategory()" :hidden="!isMoving" :disabled="!current">Move to…</button>
 </div>
@@ -36,7 +36,7 @@
     <ul :each="folders" class="folders" scope="folder">
         <li class="folder-item" :hidden="!folder.id && folders.length > limit">
 
-            <div class="folder" :onclick="handleMenu(event, 'folder', folder)" :class="{ outline: isCurrent(folder.id) }">
+            <div class="folder" :onclick="handleMenu(event, 'folder', folder)" :cy="folder.role === 'addFolder' ? 'addFolder' : null" :class="{ outline: isCurrent(folder.id) }">
                 <div class="content">
                     <sprite-icon :name="getUI(folder, 'icon')"></sprite-icon>
                     <div :component="components.field" :props="{ item: folder }"></div>
@@ -52,6 +52,7 @@
             <ul :each="folder.categories" class="categories" scope="category">
                 <li class="category-item"
                     :onclick="handleMenu(event, 'category', category, folder)"
+                    :cy="category.role === 'addCategory' ? 'addCategory' : null"
                     :class="{ outline: isCurrent(category.id), self: isMoving && target && (category.id == target?.id) }"
                     :hidden="!category.id && folder?.categories.length > limit">
 
