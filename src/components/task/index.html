@@ -1,0 +1,28 @@
+<div class="screen-top-bar">
+    <button class="outline" :onclick="close()">Close</button>
+    <h4><sprite-icon name="edit"></sprite-icon>Task</h4>
+    <button class="outline" :onclick=""><sprite-icon name="share"></sprite-icon><span>Share</span></button>
+</div>
+<div class="content">
+    <div>
+        <div class="label">
+            <div>Title</div>
+            <div class="character"><span :text="task.title?.length">0</span> of <span :text="maxlengthName"></span></div>
+        </div>
+        <div class="wrapper-field outline" :class="{ spotlighted: task.spotlighted && name.length }">
+            <input type="text" :bind.value.input.trim="task.title" :maxlength="maxlengthName" :el="taskName">
+            <button :onclick="task.spotlighted = !task.spotlighted"><sprite-icon name="spotlight"></sprite-icon></button>
+        </div>
+    </div>
+    <div class="description">
+        <div class="label">
+            <div>Description</div>
+            <div class="character"><span>0</span> of 1000</div>
+        </div>
+        <div class="description-field outline"></div>
+    </div>
+</div>
+<div class="screen-bottom-bar">
+    <button class="outline" :onclick="eventBus.emit('navigation:category', (id) => task.categoryId = id)"><sprite-icon name="catalog"></sprite-icon><span :text="category"></span></button>
+    <button class="outline" :onclick="eventBus.emit('popover:task')"><sprite-icon name="calendar"></sprite-icon><span :text="date"></span></button>
+</div>

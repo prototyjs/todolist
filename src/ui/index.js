@@ -26,6 +26,9 @@ export default {
 		},
 		search: ['Removed', 'Active']
 	},
+	task: {
+		repeats: ['Never', 'Daily', 'Weekly', 'Monthly', 'Yearly']
+	},
 	dialog: {
 		delete: {
 			text: 'Are you sure you want to permanently delete the task?',

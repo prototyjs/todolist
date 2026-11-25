@@ -4,12 +4,7 @@ import { UI_MATRIX } from './uiMatrix.js'
 import './index.css'
 import template from './index.html?raw'
 
-export async function createCategories({ element, onclose, emit = () => {} }) {
-	const data = api.categories.getAll()
-	for (const folder of data) {
-		folder.categories.push({ title: 'Add new category', role: 'addCategory' })
-	}
-	data.push({ title: 'Add new folder', role: 'addFolder' })
+export async function createCategories(element) {
 	const app = prototy({
 		root: element,
 		state: {
@@ -18,11 +13,13 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 			isMoving: false,
 			isDeleting: false,
 			isRenaming: false,
-			folders: data,
+			isSelecting: false,
+			folders: [],
 		},
 		params: {
 			limit: api.categories.limit,
-			input: { target: null }
+			input: { target: null },
+			selectCategory: null
 		},
 		methods: {
 			getUI(item, prop) {
@@ -46,6 +43,9 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 				return UI_MATRIX[type][state]?.[prop] ?? null
 			},
 			actionIcon(item) {
+				if (this.state.isSelecting) {
+					return item.id ? 'checked_line' : null
+				}
 				if (item.id !== this.state.target?.id) {
 					return (this.state.isDeleting || this.state.isMoving) ? 'checked_line' : null
 				}
@@ -113,7 +113,7 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 				if (!itemToRemove) return
 				const res = api.categories.deleteCategory(itemToRemove.id)
 				if (res.success) {
-					data.forEach(folder => {
+					this.state.folders.forEach(folder => {
 						if (!folder.categories) return
 						const categoryIndex = folder.categories.findIndex(category => category.id === itemToRemove.id)
 						if (categoryIndex !== -1) {
@@ -168,23 +168,35 @@ export async function createCategories({ element, onclose, emit = () => {} }) {
 					this.state.current = null
 					return
 				}
-				if (this.state.isMoving && type === 'folder') {
+				if ((this.state.isMoving || this.state.isSelecting) && type === 'folder') {
 					return
 				}
 				this.state.current = item
 			},
 			close() {
-				onclose()
-			},
-			cancel() {
+				eventBus.emit('navigation:' + (this.state.isSelecting ? 'task' : 'main'))
 				this.state.current = this.state.target
 				this.state.isMoving = false
 				this.state.isDeleting = false
+				this.state.isSelecting = false
 				this.state.target = null
-			},
-			emit
+			}
 		},
 		created() {
+			eventBus.on('navigation:category', (fn) => {
+				const data = api.categories.getAll()
+				for (const folder of data) {
+					folder.categories.push({ title: 'Add new category', role: 'addCategory' })
+				}
+				data.push({ title: 'Add new folder', role: 'addFolder' })
+				this.state.folders = data
+				if (!fn) return
+				this.state.isSelecting = true
+				this.params.selectCategory = () => {
+					fn(this.state.current.id)
+					eventBus.emit('navigation:task')
+				}
+			})
 			this.root.innerHTML = template
 		}
 	})

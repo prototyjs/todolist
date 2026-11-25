@@ -1,0 +1,71 @@
+.timepicker {
+    display: flex;
+    gap: var(--spacing-l);
+    margin: 0 auto;
+    width: max-content;
+    font-size: 30px;
+    position: relative;
+    height: 100px;
+    .hours, .minutes {
+        overflow-y: scroll;
+        width: 60px;
+        height: 100%;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: y mandatory;
+        transform-origin: center center;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        > div {
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            scroll-snap-align: center;
+            animation: scaleInCenter linear both;
+            animation-timeline: view();
+            animation-range: cover 0% cover 100%;
+        }
+    }
+    &[disabled] {
+        opacity: .2;
+        pointer-events: none;
+    }
+    &:before, &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 33%;
+        z-index: 1;
+    }
+    &:before {
+        top: 0;
+        left: 0;
+        background: linear-gradient(0deg, transparent 0%, var(--pc-bg-color) 50%);
+    }
+
+    &:after {
+        bottom: 0;
+        left: 0;
+        background: linear-gradient(180deg, transparent 0%, var(--pc-bg-color) 50%);
+    }
+
+}
+
+@keyframes scaleInCenter {
+    0%, 100% {
+        transform: scale(.5);
+        opacity: 0;
+        color: var(--color-gray-100);
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+        color: var(--color-text);
+    }
+}

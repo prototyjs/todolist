@@ -1,0 +1,8 @@
+<div class="timepicker" :disabled="!time.used">
+    <div :each.once="timepicker.hours" class="hours" :onscrollsnapchanging="timepicker.change(time, 'h', event)" :onscroll.passive="timepicker.scroll(event.target)" el="hours">
+        <div :text="item"></div>
+    </div>
+    <div :each.once="timepicker.minutes" class="minutes" :onscrollsnapchanging="timepicker.change(time, 'm', event)" :onscroll.passive="timepicker.scroll(event.target)" el="minutes">
+        <div :text="item"></div>
+    </div>
+</div>

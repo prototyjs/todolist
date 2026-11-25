@@ -3,8 +3,7 @@ export const UI_MATRIX = {
 		INBOX:    { icon: 'inbox',   hasCount: true },
 		NEW:      { icon: 'plus',    hasCount: false },
 		IDLE:     { icon: 'folder',  hasCount: true },
-		RENAMING: { icon: 'folder',  hasCount: false },
-		MOVING:   { icon: 'folder',  hasCount: true }
+		RENAMING: { icon: 'folder',  hasCount: false }
 	},
 	category: {
 		GENERAL:  { icon: 'general',  hasCount: true },

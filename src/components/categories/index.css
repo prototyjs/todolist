@@ -2,7 +2,7 @@ section[name="categories"] {
     > .content {
         padding: var(--spacing-s);
     }
-    > .content:not(.moving, .renaming) {
+    > .content:not(.moving, .renaming, .selecting) {
         .folder.outline, .category-item.outline {
             height: 83px;
             transition: height .2s cubic-bezier(0.25, 1, 0.5, 1);
@@ -82,7 +82,13 @@ section[name="categories"] {
         color: var(--color-gray);
     }
     .moving {
-        .actions, .folder-item:last-child, .category-item:last-child {
+        .folder-item:last-child, .category-item:last-child {
+            display: none;
+        }
+    }
+
+    .moving, .selecting {
+        .actions {
             display: none;
         }
         .category-item.outline .content sprite-icon:last-child {
@@ -96,9 +102,6 @@ section[name="categories"] {
                 border-radius: 50%;
             }
         }
-    }
-    button:disabled {
-        color: var(--color-gray);
     }
     .category-item.self {
         pointer-events: none;

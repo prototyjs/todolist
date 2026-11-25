@@ -29,7 +29,7 @@ header {
         justify-content: space-between;
         align-items: center;
         position: relative;
-        padding: var(--spacing-m);
+        padding: var(--spacing-m) var(--spacing-s);
         .date {
 
         }
@@ -47,7 +47,7 @@ header {
     }
     .categories {
         display: flex;
-        padding: 0 var(--spacing-m);
+        padding: 0 var(--spacing-s);
         padding-bottom: var(--spacing-l);
         .folders {
             z-index: 1;
@@ -179,7 +179,7 @@ header {
 
     .card {
         flex: 0 0 100%;
-        padding: 0 var(--spacing-m);
+        padding: 0 var(--spacing-s);
         scroll-snap-align: center;
         scroll-snap-stop: always;
     }

@@ -1,4 +1,4 @@
-class Service {
+export default class Service {
 	constructor() {
 		this.storageKey = 'rayDoDB'
 		this.pinsKey = 'rayDoPin'
@@ -15,7 +15,9 @@ class Service {
 			return []
 		}
 	}
-
+	getCurrent() {
+		return null
+	}
 	save() {
 		try {
 			localStorage.setItem(this.storageKey, JSON.stringify(this.todos))
@@ -36,7 +38,7 @@ class Service {
 		}
 		localStorage.setItem(this.pinsKey, JSON.stringify(this.pins))
 	}
-	add({ title, description = '', category, period }) {
+	add({ title, description = '', categoryId, period }) {
 		if (!title || title.trim() === '') {
 			throw new Error('Title is required')
 		}
@@ -44,20 +46,21 @@ class Service {
 			id: this.generateId(),
 			title: title.trim(),
 			description: description.trim(),
-			category,
+			categoryId,
 			period,
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 			completed: false,
 			removed: false,
-			spotlight: false,
-			todoDate: null, // const now = new Date().toISOString();
-			notification: {
-				todoTime: null,
-				triggerAt: '2026-09-25T10:30:00.000Z',
-				//  'daily', 'weekly', 'monthly'
-				repeatInterval: null
-			}
+			spotlighted: false,
+			date: null, // const now = new Date().toISOString();
+			notifications: {
+				time: '10:30'
+			},
+			duration: {
+				time: '10:30'
+			},
+			repeats: ''
 		}
 		this.todos.push(newTodo)
 		this.save()

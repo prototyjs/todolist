@@ -11,7 +11,7 @@
     </div>
 
     <div class="card" :class="{ keep: item.keep, removed: item.removed, done: !item.removed && item.completed, spotlight: !item.removed && !item.completed && item.spotlight }" el="center">
-        <div class="card-wrapper" :onclick="viewTask('edit', item)">
+        <div class="card-wrapper" :onclick="eventBus.emit('navigation:task', { data: item })">
             <div class="title">
                 <p :text="item.title"></p>
                 <sprite-icon :name="icon(item)"></sprite-icon>
@@ -44,7 +44,7 @@
             <sprite-icon :name="item.keep ? 'unlock' : 'lock'" :class="{ muted: item.keep }"></sprite-icon>
             <span :text="item.keep ? 'UnKeep' : 'Keep'"></span>
         </button>
-        <button class="action-btn restore" :hidden="filters.status !== 'Removed'" :onclick="viewTask('restore', item)">
+        <button class="action-btn restore" :hidden="filters.status !== 'Removed'" :onclick="">
             <sprite-icon name="restore"></sprite-icon>
             <span>Restore</span>
         </button>

@@ -10,10 +10,10 @@ const END_YEAR = currentYear + 1
 const monthFormat = new Intl.DateTimeFormat('en-En', { month: 'long' })
 const weekdayFormat = new Intl.DateTimeFormat('en-En', { weekday: 'short' })
 
-export function createCalendar({ element, onchange, emit = () => {} }) {
+export function createCalendar(element) {
 	const app = prototy({
 		root: element,
-		state: { selectedDate: 0 },
+		state: { selectedDate: '' },
 		params: {
 			weekdays: (() => {
 				const base = new Date(1970, 0, 5)
@@ -51,6 +51,12 @@ export function createCalendar({ element, onchange, emit = () => {} }) {
 				return list
 			})(),
 		},
+		setters: {
+			selectedDate(v) {
+				eventBus.emit('calendar:select', v)
+				return v
+			}
+		},
 		methods: {
 			isToday: (y, m, d) => y === today.getFullYear() && m === today.getMonth() && d === today.getDate(),
 			isSelected(y, m, d) {
@@ -63,11 +69,15 @@ export function createCalendar({ element, onchange, emit = () => {} }) {
 		},
 		created() {
 			this.root.innerHTML = template
+			eventBus.on('calendar:reset', () => this.state.selectedDate = '')
+			eventBus.on('calendar:set', (date) => {
+				const w = this.els.viewport.clientWidth
+				const currentMonthIndex = (today.getFullYear() - START_YEAR) * 12 + today.getMonth()
+				this.els.viewport.scrollTo({left: w * currentMonthIndex, behavior: 'instant'})
+			})
 		},
 		ready() {
-			const w = this.els.viewport.clientWidth
-			const currentMonthIndex = (today.getFullYear() - START_YEAR) * 12 + today.getMonth()
-			this.els.viewport.scrollTo({left: w * currentMonthIndex, behavior: 'instant'})
+
 		}
 	})
 }

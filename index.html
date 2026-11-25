@@ -18,19 +18,28 @@
     <div class="screens" el="screens">
         <section name="settings" hidden>
             <div class="screen-top-bar">
-                <button class="outline" :onclick="screens.goToMain()">Close</button>
+                <button class="outline" :onclick="eventBus.emit('navigation:main')">Close</button>
                 <h4><sprite-icon name="control"></sprite-icon>Settings</h4>
             </div>
             <div class="content">
-                <ul>
-                    <li :onclick="screens.goTo(1)"><sprite-icon name="catalog"></sprite-icon>Categories</li>
+                <ul class="group">
+                    <li :onclick="eventBus.emit('navigation:category')"><sprite-icon name="catalog"></sprite-icon>Categories<span>5</span></li>
                 </ul>
-                <ul>
+                <ul class="group">
                     <li><sprite-icon name="sound"></sprite-icon>Notifications<input type="checkbox" /></li>
                 </ul>
-                <ul>
+                <ul class="group">
+                    <li><sprite-icon name="update"></sprite-icon>Updates<span>raydo 1.1.1</span></li>
+                </ul>
+                <ul class="group">
+                    <li><sprite-icon name="language"></sprite-icon>Languages<span>English</span></li>
+                </ul>
+                <ul class="group">
                     <li><sprite-icon name="export"></sprite-icon>Export tasks<span>raydo_tasks_2026</span></li>
                     <li><sprite-icon name="import"></sprite-icon>Import tasks</button></li>
+                </ul>
+                <ul class="group">
+                    <li><sprite-icon name="heart"></sprite-icon>Share app</li>
                 </ul>
             </div>
         </section>
@@ -73,10 +82,10 @@
                 </div>
                 <nav class="bottom-bar outline">
                     <div class="bottom-wrapper">
-                        <button class="settings" :onclick="screens.goTo(0)">
+                        <button class="settings" :onclick="eventBus.emit('navigation:settings')">
                             <sprite-icon name="control"></sprite-icon>
                         </button>
-                        <button class="add">
+                        <button class="add" :onclick="eventBus.emit('navigation:task')">
                             <sprite-icon name="new"></sprite-icon>
                         </button>
                         <div class="search-bar">
@@ -94,19 +103,65 @@
                 </nav>
             </div>
         </section>
-        <section name="task" :onclick="screens.goToMain()" hidden>
-            <div class="screen-top-bar">
-                <button class="outline">Close</button>
-                <h4><sprite-icon name="edit"></sprite-icon>Task</h4>
-                <button class="outline">Done</button>
-            </div>
-        </section>
+        <section name="task" el="taskSection" hidden></section>
+    </div>
+    <div class="toast" :onclick="toast.action" :hidden="!toast.text">
+        <sprite-icon name="update"></sprite-icon><span :text="toast.text"></span>
     </div>
     <div popover="auto" id="bottom-sheet" class="bottom-sheet" el="sheet">
-        <button popovertarget="bottom-sheet" popovertargetaction="hide" class="close-btn outline">
-            <sprite-icon name="close"></sprite-icon>
-        </button>
-        <div class="sheet-content" el="sheet-content"></div>
+        <div class="articles" el="articles">
+            <article name="main">
+                <div class="screen-top-bar">
+                    <button popovertarget="bottom-sheet" popovertargetaction="hide" class="outline">Done</button>
+                    <button class="outline" :onclick="eventBus.emit('calendar:reset')">No Date</button>
+                </div>
+                <div class="content">
+                    <div el="sheet-calendar"></div>
+                    <ul class="group" :disabled="!task.date">
+                        <li :onclick="eventBus.emit('popover:notifications')"><sprite-icon name="notifications"></sprite-icon>Notice<span :text="task.notifications.used ? uniteTime(task.notifications) : 'off'"></span></li>
+
+                        <li :onclick="eventBus.emit('popover:duration')"><sprite-icon name="duration"></sprite-icon>Duration<span :text="task.duration.used ? uniteTime(task.duration) : 'off'"></span></li>
+
+                        <li :onclick="eventBus.emit('popover:repeats')"><sprite-icon name="repeats"></sprite-icon>Repeats<span :text="task.repeats"></span></li>
+                    </ul>
+                </div>
+            </article>
+            <article name="notifications">
+                <div class="screen-top-bar">
+                    <button :onclick="eventBus.emit('popover:task')" class="outline">Done</button>
+                    <button class="outline" :onclick="timepicker.set(els.notifications.els, task.notifications.default)">Default</button>
+                </div>
+                <div class="content">
+                    <div :component="components.timepicker" :props="{ time: task.notifications }" el="notifications"></div>
+                    <ul class="group">
+                        <li>Notice use<input type="checkbox" :bind.checked.change="task.notifications.used"/></li>
+                        <li :onclick="updateNoticeDefault()">Remember as default <span class="info" :text="uniteTime(task.notifications.default)"></span></li>
+                    </ul>
+                </div>
+            </article>
+            <article name="duration">
+                <div class="screen-top-bar">
+                    <button :onclick="eventBus.emit('popover:task')" class="outline">Done</button>
+                </div>
+                <div class="content">
+                    <div :component="components.timepicker" :props="{ time: task.duration }" el="duration"></div>
+                    <ul class="group">
+                        <li>Duration use<input type="checkbox" :bind.checked.change="task.duration.used"/></li>
+                    </ul>
+                </div>
+            </article>
+            <article name="repeats">
+                <div class="screen-top-bar">
+                    <button class="outline" :onclick="eventBus.emit('popover:task')">Done</button>
+                </div>
+                <div class="content">
+                    <ul :each.once="ui.task.repeats" class="group">
+                        <li :onclick="task.repeats = item" onclick="eventBus.emit('popover:task')" :class="{ active: item === task.repeats }"><div :text="item"></div></li>
+                    </ul>
+                </div>
+            </article>
+        </div>
+
     </div>
     <dialog id="dialogElement">
         <sprite-icon name="warn2"></sprite-icon>
@@ -125,6 +180,17 @@
             <button class="active" :onclick="dialog.action()" :text="dialog.actionName" :disabled="!dialog.input"></button>
         </div>
     </dialog>
+    <div class="preview" :hidden="loaded">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 482.5 235">
+            <path d="M392.79,95.21c-15.44,0-28,12.13-28,27.03s12.56,27.03,28,27.03,28-12.12,28-27.03-12.56-27.03-28-27.03ZM392.79,137.62c-8.82,0-16-6.9-16-15.38s7.18-15.38,16-15.38,16,6.9,16,15.38-7.18,15.38-16,15.38Z"/>
+            <path d="M278.92,137.41l24.7-41.44c.09-.15.09-.35,0-.5s-.25-.25-.43-.25h-12.7c-.18,0-.34.09-.43.24l-17.92,30.07-17.92-30.07c-.09-.15-.25-.24-.43-.24h-12.8c-.18,0-.35.1-.44.25-.09.16-.09.35,0,.5l24.62,41.24-15.52,26.04c-.09.15-.09.35,0,.5s.25.25.43.25h12.7c.18,0,.34-.09.43-.24l15.37-25.78.33-.55s0,0,0,0Z"/>
+            <path d="M232.11,103.17c-2.55-2.47-5.45-4.38-8.86-5.81-6.92-2.86-14.86-2.86-21.78,0-3.3,1.36-6.28,3.31-8.86,5.81-2.48,2.4-4.56,5.37-6.01,8.59-1.49,3.49-2.24,7.05-2.24,10.56,0,3.74.76,7.3,2.24,10.56,1.39,3.17,3.41,6.06,6.01,8.59,2.47,2.4,5.53,4.41,8.86,5.82,3.59,1.44,7.26,2.17,10.89,2.17h7.3c.28,0,.5-.22.5-.5v-10.65c0-.28-.22-.5-.5-.5h-7.3c-2.26,0-4.34-.41-6.22-1.23-1.83-.71-3.48-1.78-5.03-3.28-1.43-1.38-2.6-3.07-3.39-4.89-.83-1.79-1.25-3.81-1.25-5.99s.42-4.2,1.26-6.01c.73-1.77,1.84-3.37,3.39-4.87,1.41-1.38,3.16-2.51,5.04-3.28,4-1.61,8.52-1.61,12.43,0,1.83.7,3.48,1.78,5.03,3.28,1.43,1.38,2.6,3.07,3.39,4.89.83,1.79,1.25,3.81,1.25,5.99v26.53c0,.28.22.5.5.5h11c.28,0,.5-.22.5-.5v-26.53c0-3.75-.76-7.3-2.23-10.54-1.18-3.13-3.11-5.98-5.92-8.7Z"/>
+            <path d="M357.78,71h-12v25.21h0v26.04c0,2.18-.42,4.2-1.26,6-.79,1.81-1.96,3.5-3.39,4.88-1.56,1.5-3.2,2.58-5.04,3.29-3.9,1.61-8.42,1.61-12.42,0-1.88-.77-3.63-1.91-5.04-3.29-1.55-1.51-2.66-3.1-3.4-4.89-.83-1.79-1.25-3.81-1.25-5.99s.42-4.2,1.26-6c.79-1.81,1.96-3.5,3.39-4.88,1.56-1.5,3.2-2.58,5.05-3.29,1.86-.81,3.95-1.22,6.2-1.22h7.3c.28,0,.5-.22.5-.5v-10.65c0-.28-.22-.5-.5-.5h-7.3c-3.63,0-7.29.73-10.89,2.17-3.32,1.4-6.38,3.41-8.85,5.81-2.6,2.53-4.62,5.42-6.01,8.58-1.49,3.27-2.25,6.82-2.25,10.57,0,3.51.75,7.06,2.24,10.57,1.45,3.22,3.53,6.19,6.01,8.58,2.58,2.5,5.56,4.46,8.86,5.81,3.46,1.43,7.17,2.15,10.89,2.15s7.43-.72,10.89-2.15c3.41-1.44,6.3-3.34,8.85-5.81,2.81-2.72,4.74-5.57,5.91-8.67,1.49-3.27,2.25-6.82,2.25-10.57v-26.53s0-.03,0-.05v-24.67Z"/>
+            <path d="M180.83,95.22h-6.5s-.5-.01-.5-.01c-15.44,0-28,12.13-28,27.03h0v26.54c0,.28.22.5.5.5h11.01c.28,0,.5-.22.5-.5v-26.53s0-.03,0-.04c.02-8.44,7.14-15.3,15.92-15.35.03,0,.05.02.08.02h7c.28,0,.5-.22.5-.5v-10.66c0-.28-.22-.5-.5-.5Z"/>
+            <path class="logo" d="M52.78,71.54c-.9-.03-1.36,1.07-.72,1.71l80.51,80.51c.63.63,1.73.18,1.71-.72-1.28-44.44-37.06-80.22-81.5-81.5Z"/>
+            <text x="50%" text-anchor="middle" y="224">Great things</text>
+        </svg>
+    </div>
 </div>
 </body>
 </html>

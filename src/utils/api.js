@@ -1,6 +1,7 @@
 import categoryService from './categoryService.js'
+import taskService from './taskService.js'
 
 export const api = {
-	task: null,
+	task: new taskService(),
 	categories: new categoryService()
 }

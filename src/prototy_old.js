@@ -318,16 +318,20 @@ function html(element, value, modifier, args, transform) {
 	element.innerHTML = transform(value, modifier, args) ?? "";
 }
 __name(html, "html");
-function show(element, value) {
+function display(element, value) {
 	element.style.display = value ? "" : "none";
+	const nextElement = element.nextElementSibling;
+	if (nextElement && nextElement.hasAttribute("display-else")) {
+		nextElement.style.display = value ? "none" : "";
+	}
 }
-__name(show, "show");
+__name(display, "display");
 const innerDirectives = {
 	class: classes,
 	text,
 	each,
 	html,
-	show,
+	display,
 	attr
 };
 function setDeepValue(obj, path, val) {
@@ -998,6 +1002,7 @@ const _Prototy = class _Prototy {
 		this.listeners = new Listeners();
 		this.contextStorage = /* @__PURE__ */ new WeakMap();
 		this.pendingTargets = /* @__PURE__ */ new Map();
+		this.proxyMetadata = new WeakMap();
 		this.initComputed(state, computed);
 		this.state = this.createProxy(state);
 		this.methods = {};
@@ -1196,7 +1201,8 @@ const _Prototy = class _Prototy {
 			const computedEffect = /* @__PURE__ */ __name(() => {
 				if (!isDirty) {
 					isDirty = true;
-					this.schedule(rawState, key);
+					// Передаем прокси всего стейта, если он уже инициализирован, иначе сырой объект
+					this.schedule(this.state || rawState, key);
 				}
 			}, "computedEffect");
 			computedEffect.deps = /* @__PURE__ */ new Set();
@@ -1241,92 +1247,105 @@ const _Prototy = class _Prototy {
 	 * @param { string } parent
 	 * @returns { object }
 	 */
-	createProxy(state, path = "", parent = null) {
+	createProxy(state, path = "", parentProxy = null) {
 		const self = this;
-		if (isObject(state)) {
-			Object.keys(state).forEach((key) => {
-				const descriptor = Object.getOwnPropertyDescriptor(state, key);
-				if (descriptor && typeof descriptor.get === "function") {
-					return;
-				}
-				if (isObject(state[key])) {
-					state[key] = this.createProxy(
-						state[key],
-						path ? `${path}.${key}` : key,
-						state
-					);
-				}
-			});
-		}
-		if (path) {
-			Object.defineProperty(state, "_path", {
-				value: path,
-				enumerable: false,
-				writable: true,
-				configurable: true
-			});
-			Object.defineProperty(state, "_parent", {
-				value: parent,
-				enumerable: false,
-				writable: true,
-				configurable: true
-			});
-		}
-		Object.defineProperty(state, IS_PROXY, {
-			value: true,
-			enumerable: false,
-			writable: false,
-			configurable: false
+
+		if (!isObject(state)) return state;
+
+		// Если нам передали уже проксированный объект, мы достаем его чистую основу
+		const target = state[IS_PROXY] ? state._raw : state;
+
+		// Рекурсивно обрабатываем свойства оригинального объекта
+		Object.keys(target).forEach((key) => {
+			const descriptor = Object.getOwnPropertyDescriptor(target, key);
+			if (descriptor && typeof descriptor.get === "function") return;
+
+			if (isObject(target[key])) {
+				// Передаем текущий путь. Вложенный объект получит ссылку на прокси родителя,
+				// но так как здесь самого прокси еще нет, мы временно соберем дерево при создании.
+				target[key] = this.createProxy(
+					target[key],
+					path ? `${path}.${key}` : key,
+					null // Будет связано динамически при обращении/присвоении
+				);
+			}
 		});
-		Object.defineProperty(state, "_lastSegment", {
-			value: path ? path.split(".").pop() : null,
-			enumerable: false,
-			writable: false,
-			configurable: false
-		});
-		return new Proxy(state, {
+
+		// Создаем прокси для текущего уровня
+		const proxy = new Proxy(target, {
 			get(target, property2, receiver) {
-				if (property2 === IS_PROXY) {
-					return true;
-				}
+				if (property2 === IS_PROXY) return true;
+				if (property2 === "_raw") return target;
+
+				// Динамическое чтение метаданных текущего прокси
+				const meta = self.proxyMetadata.get(receiver) || {};
+				if (property2 === "_path") return meta.path || "";
+				if (property2 === "_parent") return meta.parent || null;
+				if (property2 === "_lastSegment") return meta.path ? meta.path.split(".").pop() : null;
+
 				const value = Reflect.get(target, property2, receiver);
 				const isObservable = typeof property2 !== "symbol" && property2 in target && typeof value !== "function";
 				const activeEffect = self.reactivity.activeEffect;
+
 				if (isObservable && activeEffect) {
 					self.reactivity.add(target, property2, activeEffect);
 					activeEffect.deps.add({ target, property: property2 });
 				}
+
+				// Если возвращаемое значение — объект-прокси, динамически обновляем его родителя в контексте текущего прокси
+				if (isObject(value) && value[IS_PROXY]) {
+					const currentMeta = self.proxyMetadata.get(receiver) || { path: "" };
+					const childPath = currentMeta.path ? `${currentMeta.path}.${property2.toString()}` : property2.toString();
+
+					// Обновляем метаданные для вложенного прокси в контексте этого обращения
+					self.proxyMetadata.set(value, {
+						path: childPath,
+						parent: receiver
+					});
+				}
+
 				return value;
 			},
+
 			// eslint-disable-next-line sonarjs/cognitive-complexity
 			set(target, property2, value, receiver) {
 				var _a;
 				if (typeof property2 === "symbol") {
 					return Reflect.set(target, property2, value, receiver);
 				}
+
 				const descriptor = Object.getOwnPropertyDescriptor(target, property2);
 				if (descriptor && typeof descriptor.get === "function" && typeof descriptor.set !== "function") {
 					log.error('Computed property "{0}" is readonly.', property2.toString());
 					return false;
 				}
+
 				const isArray = Array.isArray(target);
 				const oldValue = Reflect.get(target, property2);
 				const isLength = isArray && property2 === "length";
+
 				if (!isLength && Object.is(oldValue, value)) {
 					return true;
 				}
-				const fullPath = path ? `${path}.${property2.toString()}` : property2.toString();
+
+				// Извлекаем метаданные текущего прокси (через receiver)
+				const currentMeta = self.proxyMetadata.get(receiver) || { path: "" };
+				const fullPath = currentMeta.path ? `${currentMeta.path}.${property2.toString()}` : property2.toString();
+
 				let newValue = value;
-				if (isObject(value) && !(value instanceof Date) && !value[IS_PROXY]) {
-					newValue = self.createProxy(value, fullPath);
+				if (isObject(value) && !(value instanceof Date)) {
+					// Если присваивается другой прокси, берем его оригинальный target (_raw)
+					const rawValue = value[IS_PROXY] ? value._raw : value;
+
+					// Создаем для него прокси в контексте НОВОГО пути
+					newValue = self.createProxy(rawValue, fullPath, receiver);
 				}
+
 				if (typeof ((_a = self.setters) == null ? void 0 : _a[fullPath]) === "function" && !self.activeSetters.has(fullPath)) {
 					self.activeSetters.add(fullPath);
 					try {
 						newValue = self.setters[fullPath](newValue, oldValue);
-						if (Object.is(oldValue, newValue)) {
-							return true;
-						}
+						if (Object.is(oldValue, newValue)) return true;
 					} catch (e) {
 						log.error('Error in setter for "{0}": {1}', fullPath, e.message);
 						newValue = oldValue;
@@ -1334,36 +1353,52 @@ const _Prototy = class _Prototy {
 						self.activeSetters.delete(fullPath);
 					}
 				}
+
 				const success = Reflect.set(target, property2, newValue, receiver);
 				if (success) {
-					self.schedule(target, property2);
+					// В schedule теперь важно передавать не голый target, а receiver (прокси),
+					// чтобы метод schedule мог подняться по правильной ветке дерева метаданных!
+					self.schedule(receiver, property2);
 					if (isArray && !isLength) {
-						self.schedule(target, "length");
+						self.schedule(receiver, "length");
 					}
 				}
 				return success;
 			}
 		});
+
+		// Сохраняем метаданные для свежесозданного прокси
+		this.proxyMetadata.set(proxy, {
+			path: path,
+			parent: parentProxy
+		});
+
+		return proxy;
 	}
 	/**
 	 * @param { object } target
 	 * @param { string } property
 	 */
-	schedule(target, property2) {
+	schedule(proxyInstance, property2) {
+
 		const addToPending = /* @__PURE__ */ __name((obj, prop) => {
-			if (!this.pendingTargets.has(obj)) {
-				this.pendingTargets.set(obj, /* @__PURE__ */ new Set());
+			const rawObj = obj[IS_PROXY] ? obj._raw : obj;
+			if (!this.pendingTargets.has(rawObj)) {
+				this.pendingTargets.set(rawObj, /* @__PURE__ */ new Set());
 				queueMicrotask(() => {
-					const changedKeys = this.pendingTargets.get(obj);
-					this.pendingTargets.delete(obj);
+					const changedKeys = this.pendingTargets.get(rawObj);
+					this.pendingTargets.delete(rawObj);
 					const uniqueEffects = /* @__PURE__ */ new Set();
 					changedKeys.forEach((key) => {
-						const effects = this.reactivity.find(obj, key);
+						const effects = this.reactivity.find(rawObj, key);
 						effects.forEach((eff) => uniqueEffects.add(eff));
-						const value = obj[key];
-						if (value && value._path) {
-							const pathEffects = this.reactivity.find(obj, value._path);
-							pathEffects.forEach((eff) => uniqueEffects.add(eff));
+						const value = rawObj[key];
+						if (value) {
+							const meta = this.proxyMetadata.get(value);
+							if (meta && meta.path) {
+								const pathEffects = this.reactivity.find(rawObj, meta.path);
+								pathEffects.forEach((eff) => uniqueEffects.add(eff));
+							}
 						}
 					});
 					uniqueEffects.forEach((update) => {
@@ -1373,10 +1408,14 @@ const _Prototy = class _Prototy {
 					});
 				});
 			}
-			this.pendingTargets.get(obj).add(prop);
+			this.pendingTargets.get(rawObj).add(prop);
 		}, "addToPending");
-		addToPending(target, property2);
-		let current = target;
+
+		addToPending(proxyInstance, property2);
+
+		let current = proxyInstance;
+		// Цикл теперь безопасно поднимается по цепочке ПРОКСИ,
+		// используя динамические геттеры _parent и _lastSegment из WeakMap!
 		while (current && current._parent) {
 			const parentProperty = current._lastSegment;
 			if (parentProperty) {
@@ -1413,10 +1452,7 @@ const _Prototy = class _Prototy {
 			has: /* @__PURE__ */ __name(() => true, "has")
 		});
 	}
-	/**
-	 * @param { HTMLElement } element
-	 * @param { any } newValue
-	 */
+
 	updateContext(element, newValue) {
 		let entry = this.contextStorage.get(element);
 		if (!entry) {

@@ -1,6 +1,7 @@
 class ScreenSlider {
-	constructor(container, mainIndex = 2) {
+	constructor({ container, mainIndex = 0, autoHeight }) {
 		this.container = container
+		this.autoHeight = autoHeight
 		this.screens = Array.from(this.container.children)
 		this.mainIndex = mainIndex
 		this.currentIndex = mainIndex
@@ -9,6 +10,9 @@ class ScreenSlider {
 		this._init()
 	}
 	_init() {
+		if (this.autoHeight) {
+			this.container.classList.add('is-auto-height')
+		}
 		this.screens.forEach((screen, index) => {
 			if (index === this.currentIndex) {
 				screen.hidden = false
@@ -32,7 +36,12 @@ class ScreenSlider {
 		targetScreen.classList.add(prepareClass)
 		targetScreen.hidden = false
 
-		targetScreen.offsetHeight
+		if (this.autoHeight) {
+			this.container.parentNode.style.height = targetScreen.offsetHeight + 'px'
+		} else {
+			targetScreen.offsetHeight
+		}
+
 
 		targetScreen.addEventListener('transitionend', this._handleTransitionEnd)
 
@@ -46,8 +55,8 @@ class ScreenSlider {
 		currentScreen.classList.add(moveClass)
 	}
 	_handleTransitionEnd(event) {
-
-		if (event.propertyName !== 'transform') return
+		const expectedProperty = this.autoHeight ? 'opacity' : 'transform'
+		if (event.propertyName !== expectedProperty) return
 
 		const { currentScreen, targetScreen, targetIndex, isMovingForward, prepareClass } = this._transitionContext
 

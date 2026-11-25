@@ -2,23 +2,25 @@
     position: relative;
     width: 100%;
     overflow: hidden;
-    font-family: sans-serif;
+    color: var(--color-text-second);
     h3 {
-        margin: 0 0 2em 0;
+        margin: 0 0 34px 0;
         text-align: center;
+        color: var(--color-text);
     }
+    --size: 50px
 }
 
 .calendar-weekdays {
     position: absolute;
     width: 100%;
-    margin-top: 2.3em;
+    margin-top: 28px;
     display: grid;
     font-size: 14px;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(7, var(--size));
     text-align: center;
-    font-weight: bold;
+    justify-content: center;
+    color: var(--color-text);
 }
 
 .calendar-viewport {
@@ -47,13 +49,21 @@
 
 .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(7, var(--size));
+    justify-content: center;
     text-align: center;
+    span {
+        height: 34px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 }
 .is-today {
     outline: 1px solid gray;
 }
 .is-selected {
-    background-color: #3fcd6b;
+    background-color: var(--color-gray-100);
+    color: var(--color-text);
 }

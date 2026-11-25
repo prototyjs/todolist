@@ -26,12 +26,17 @@ class EventBus {
 	 * @param {string} event
 	 * @param {Object} payload
 	 */
-	emit(event, payload = {}) {
+	emit(event, payload) {
 		if (!this.listeners[event]) return
 
 		this.listeners[event].forEach(callback => {
 			try {
-				callback(payload)
+				if (payload?.data) {
+					payload.data = JSON.parse(JSON.stringify(payload.data))
+					callback(payload)
+				} else {
+					callback(payload)
+				}
 			} catch (error) {
 				console.error(`Error in event handler '${event}':`, error)
 			}

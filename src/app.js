@@ -1,10 +1,13 @@
-import { prototy } from '@/prototy.js'
+import { prototy, nextTick } from '@/prototy.js'
 import card from './components/card.html?raw'
+import timepicker from './components/timepicker/index.html?raw'
 import { createScreenSlider } from './components/screens'
 import { createDropDown } from './components/dropdown'
 import { createCalendar } from './components/calendar'
 import { createCategories } from './components/categories'
+import { createTask } from './components/task'
 import { runTimer } from './utils/runTimer'
+import { createTimepicker } from './components/timepicker'
 import './utils/eventBus.js'
 import ui from './ui'
 import tasks from './mock/tasks.js'
@@ -13,6 +16,7 @@ import './components/settings/index.css'
 import './components/categories/index.css'
 import './components/sheet/index.css'
 import './components/dialog/index.css'
+import './components/timepicker/index.css'
 import './styles/switch.css'
 
 const animationBtn = {
@@ -26,13 +30,14 @@ const animationBtn = {
 const app = prototy({
 	root: document.body,
 	params: {
-		screens: null,
 		ui,
 		lastActiveCard: null,
 		taskPin: tasks[3],
-		taskPlay: tasks[4]
+		taskPlay: tasks[4],
+		timepicker: {},
 	},
 	state: {
+		loaded: false,
 		searchShow: false,
 		filters: {
 			status: ui.defaultStatus,
@@ -40,8 +45,19 @@ const app = prototy({
 			isRemoved: true,
 			isCompleted: false,
 		},
+		task: {
+			date: '',
+			notifications: { h: '05', m: '00', default: { h: '09', m: '01' }, used: true },
+			duration: { h: '00', m: '40', used: false },
+			repeats: 'Never',
+		},
 		countdownName: '',
 		tasks,
+		toast: {
+			text: 'Update raydo',
+			type: 'info', // warning, error
+			action: () => {},
+		},
 		dialog: {
 			text: '',
 			input: '',
@@ -56,6 +72,11 @@ const app = prototy({
 			if (v === 'Removed') {
 				this.state.filters.isRemoved = true
 			}
+			return v
+		},
+		'task.*'(v,_,setterKey) {
+			console.log(setterKey)
+			nextTick().then(() => eventBus.emit('update:task', { data: this.state.task }))
 			return v
 		}
 	},
@@ -75,8 +96,12 @@ const app = prototy({
 			this.els.dialogInput.value = ''
 			dialogField.close()
 		},
-		viewTask() {
-			this.params.screens.goTo(3)
+		updateNoticeDefault() {
+			const { h, m } = this.state.task.notifications
+			this.state.task.notifications.default = { h, m }
+		},
+		uniteTime({ h, m }) {
+			return h + ':' + m
 		}
 	},
 	elements: {
@@ -95,6 +120,7 @@ const app = prototy({
 		}
 	},
 	components: {
+		timepicker,
 		card: {
 			template: card,
 			elements: {
@@ -174,8 +200,14 @@ const app = prototy({
 			}
 		}
 	},
+	created() {
+		createTimepicker.bind(this)()
+	},
 	ready() {
-		this.params.screens = createScreenSlider(this.els.screens)
+		console.log(this.els)
+		const screens = createScreenSlider({ container: this.els.screens, mainIndex: 2 })
+		const articles = createScreenSlider({ container: this.els.articles, autoHeight: true })
+
 		const { statuses, folders } = ui.filters
 		createDropDown({
 			element: this.els.statuses,
@@ -186,7 +218,7 @@ const app = prototy({
 			onchange: (v) => this.state.filters.status = v,
 			emit: (v) => {
 				if (v === 'Clear Removed') {
-					window.eventBus.emit('dialog:open', { type: 'Clear Removed', action: () => {} })
+					eventBus.emit('dialog:open', { type: 'Clear Removed', action: () => {} })
 				}
 			}
 		})
@@ -194,26 +226,41 @@ const app = prototy({
 			element: this.els.folders,
 			current: this.state.filters.folder,
 			id: folders.id,
-			items:[...folders.items, { icon: 'folder', text: 'My Folder' }], // если попок больше одной Any Folder
+			items:[...folders.items, { icon: 'folder', text: 'My Folder' }], // если папок больше одной Any Folder
 			actions: folders.actions,
 			// onchange: (v) => this.state.filters.status = v
-			emit: (v) => {
-				if (v === 'Configure') {
-					this.params.screens.goTo(1)
-				}
-			}
 		})
-		createCalendar({
-			element: this.els.sheetContent,
-			// onchange,
-			// emit = () => {}
+		createCalendar(this.els.sheetCalendar)
+		createCategories(this.els.categoriesSection)
+		createTask(this.els.taskSection)
+
+		eventBus.on('calendar:select', (v) => {
+			console.log(v)
+			this.state.task.date = v
 		})
-		createCategories({
-			element: this.els.categoriesSection,
-			onclose: () => this.params.screens.goToMain()
-			// onchange,
+
+		eventBus.on('navigation:main', () => screens.goToMain()) // const unsub =
+		eventBus.on('navigation:task', () => screens.goTo(3))
+		eventBus.on('navigation:category', () => screens.goTo(1))
+		eventBus.on('navigation:settings', () => screens.goTo(0))
+
+		eventBus.on('popover:task', () => {
+			this.els.sheet.showPopover()
+			articles.goTo(0)
+			eventBus.emit('calendar:set')
 		})
-		const unsub = window.eventBus.on('dialog:open', ({ type, action, action2, cancel, element = dialogElement }) => {
+
+		eventBus.on('popover:notifications', () => {
+			articles.goTo(1)
+			this.params.timepicker.set(this.els.notifications.els, this.state.task.notifications)
+		})
+		eventBus.on('popover:duration', () => {
+			articles.goTo(2)
+			this.params.timepicker.set(this.els.duration.els, this.state.task.duration)
+		})
+		eventBus.on('popover:repeats', () => articles.goTo(3))
+
+		eventBus.on('dialog:open', ({ type, action, action2, cancel, element = dialogElement }) => {
 			this.state.dialog.text = ui.dialog[type].text
 			this.state.dialog.actionName = ui.dialog[type].actionName
 			this.state.dialog.action = () => {
@@ -236,5 +283,6 @@ const app = prototy({
 			}
 			element.showModal()
 		})
+		this.state.loaded = true
 	}
 })
